@@ -1,33 +1,31 @@
-import { Text, YStack, Button, Spinner } from "tamagui";
-import { useHealthCheck } from "../src/hooks/useHealthCheck";
+import { useEffect } from "react";
+import { YStack, Spinner, Text } from "tamagui";
+import { router } from "expo-router";
+import { useAuthStore } from "../src/stores/auth.store";
 
-export default function Home() {
-  const { data, isLoading, isError, refetch } = useHealthCheck();
+export default function Index() {
+  const { isAuthenticated, isLoading, loadUser } = useAuthStore();
+
+  useEffect(() => {
+    loadUser();
+  }, []);
+
+  useEffect(() => {
+    if (!isLoading) {
+      if (isAuthenticated) {
+        router.replace("/(app)/home");
+      } else {
+        router.replace("/(auth)/login");
+      }
+    }
+  }, [isLoading, isAuthenticated]);
 
   return (
-    <YStack
-      flex={1}
-      justifyContent="center"
-      alignItems="center"
-      padding="$4"
-      gap="$4"
-    >
-      <Text fontSize="$6" fontWeight="bold">
-        HealthCheck App
+    <YStack f={1} jc="center" ai="center" bg="$background" gap="$4">
+      <Text fontSize="$8" fontWeight="bold">
+        HealthCheck
       </Text>
-
-      {isLoading && <Spinner size="large" />}
-
-      {isError && (
-        <>
-          <Text color="$red10">❌ API não conectada</Text>
-          <Text fontSize="$2">Verifique se o backend está rodando</Text>
-        </>
-      )}
-
-      {data && <Text color="$green10">✅ API conectada!</Text>}
-
-      <Button onPress={() => refetch()}>Testar conexão</Button>
+      <Spinner size="large" />
     </YStack>
   );
 }
