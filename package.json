@@ -37,6 +37,7 @@
     "react-dom": "*",
     "react-hook-form": "^7.71.2",
     "react-native": "0.81.5",
+    "react-native-mask-input": "^1.2.3",
     "react-native-reanimated": "~4.1.1",
     "react-native-safe-area-context": "~5.6.0",
     "react-native-screens": "~4.16.0",
