@@ -7,66 +7,76 @@ import MaskInput from "react-native-mask-input";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { useTranslation } from "react-i18next";
 import { useAuthStore } from "../../src/stores/auth.store";
 
-const registerSchema = z.object({
-  name: z
-    .string()
-    .min(1, "Name is required")
-    .min(2, "Name must be at least 2 characters"),
-  email: z.string().min(1, "Email is required").email("Invalid email"),
-  nickname: z
-    .string()
-    .min(1, "Nickname is required")
-    .min(3, "Nickname must be at least 3 characters")
-    .max(30, "Nickname must be at most 30 characters")
-    .regex(/^[a-zA-Z0-9_]+$/, "Only letters, numbers and underscore"),
-  password: z
-    .string()
-    .min(1, "Password is required")
-    .min(8, "Password must be at least 8 characters")
-    .regex(
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/,
-      "Must contain: uppercase, lowercase, number and special character",
-    ),
-  birthDate: z
-    .string()
-    .min(1, "Birth date is required")
-    .regex(/^\d{2}\/\d{2}\/\d{4}$/, "Use format DD/MM/YYYY")
-    .refine((val) => {
-      const [day, month, year] = val.split("/").map(Number);
-      const date = new Date(year, month - 1, day);
-      return (
-        date.getFullYear() === year &&
-        date.getMonth() === month - 1 &&
-        date.getDate() === day
-      );
-    }, "Invalid date")
-    .refine((val) => {
-      const [day, month, year] = val.split("/").map(Number);
-      const date = new Date(year, month - 1, day);
-      const today = new Date();
-      const age = today.getFullYear() - date.getFullYear();
-      return age >= 10 && age <= 120;
-    }, "Age must be between 10 and 120 years"),
-  height: z
-    .string()
-    .min(1, "Height is required")
-    .refine((val) => {
-      const height = parseInt(val);
-      return height >= 50 && height <= 300;
-    }, "Height must be between 50 and 300 cm"),
-  sex: z.enum(["male", "female"]),
-});
+const useRegisterSchema = () => {
+  const { t } = useTranslation();
 
-type RegisterFormData = z.infer<typeof registerSchema>;
+  return z.object({
+    name: z
+      .string()
+      .min(1, t("validation.required"))
+      .min(2, t("validation.nameMin")),
+    email: z
+      .string()
+      .min(1, t("validation.required"))
+      .email(t("validation.invalidEmail")),
+    nickname: z
+      .string()
+      .min(1, t("validation.required"))
+      .min(3, t("validation.nicknameMin"))
+      .max(30, t("validation.nicknameMax"))
+      .regex(/^[a-zA-Z0-9_]+$/, t("validation.nicknameFormat")),
+    password: z
+      .string()
+      .min(1, t("validation.required"))
+      .min(8, t("validation.passwordMin"))
+      .regex(
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/,
+        t("validation.passwordFormat"),
+      ),
+    birthDate: z
+      .string()
+      .min(1, t("validation.required"))
+      .regex(/^\d{2}\/\d{2}\/\d{4}$/, t("validation.birthDateFormat"))
+      .refine((val) => {
+        const [day, month, year] = val.split("/").map(Number);
+        const date = new Date(year, month - 1, day);
+        return (
+          date.getFullYear() === year &&
+          date.getMonth() === month - 1 &&
+          date.getDate() === day
+        );
+      }, t("validation.invalidDate"))
+      .refine((val) => {
+        const [day, month, year] = val.split("/").map(Number);
+        const date = new Date(year, month - 1, day);
+        const today = new Date();
+        const age = today.getFullYear() - date.getFullYear();
+        return age >= 10 && age <= 120;
+      }, t("validation.ageRange")),
+    height: z
+      .string()
+      .min(1, t("validation.required"))
+      .refine((val) => {
+        const height = parseInt(val);
+        return height >= 50 && height <= 300;
+      }, t("validation.heightRange")),
+    sex: z.enum(["male", "female"]),
+  });
+};
+
+type RegisterFormData = z.infer<ReturnType<typeof useRegisterSchema>>;
 
 export default function Register() {
+  const { t } = useTranslation();
   const [showPassword, setShowPassword] = useState(false);
   const [apiError, setApiError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const register = useAuthStore((state) => state.register);
+  const registerUser = useAuthStore((state) => state.register);
+  const registerSchema = useRegisterSchema();
 
   const {
     control,
@@ -99,7 +109,7 @@ export default function Register() {
     setIsLoading(true);
 
     try {
-      await register({
+      await registerUser({
         ...data,
         birthDate: parseBirthDate(data.birthDate),
         height: parseFloat(data.height),
@@ -107,7 +117,9 @@ export default function Register() {
       });
       router.replace("/(app)/home");
     } catch (err: any) {
-      setApiError(err.response?.data?.message || "Registration failed");
+      setApiError(
+        err.response?.data?.message || t("validation.registerFailed"),
+      );
     } finally {
       setIsLoading(false);
     }
@@ -134,10 +146,10 @@ export default function Register() {
           <YStack style={{ alignItems: "center", gap: 7, marginBottom: 7 }}>
             <Activity size={40} color="#059669" />
             <Text fontSize="$7" fontWeight="bold" color="#111827">
-              Create Account
+              {t("auth.registerTitle")}
             </Text>
             <Text fontSize="$3" color="#6B7280">
-              Start tracking your progress
+              {t("auth.registerSubtitle")}
             </Text>
           </YStack>
 
@@ -161,7 +173,7 @@ export default function Register() {
               name="name"
               render={({ field: { onChange, value } }) => (
                 <Input
-                  placeholder="Name"
+                  placeholder={t("register.name")}
                   value={value}
                   onChangeText={onChange}
                   size="$4"
@@ -184,7 +196,7 @@ export default function Register() {
               name="email"
               render={({ field: { onChange, value } }) => (
                 <Input
-                  placeholder="Email"
+                  placeholder={t("auth.email")}
                   value={value}
                   onChangeText={onChange}
                   autoCapitalize="none"
@@ -209,7 +221,7 @@ export default function Register() {
               name="nickname"
               render={({ field: { onChange, value } }) => (
                 <Input
-                  placeholder="Nickname"
+                  placeholder={t("auth.nickname")}
                   value={value}
                   onChangeText={onChange}
                   autoCapitalize="none"
@@ -234,7 +246,7 @@ export default function Register() {
               render={({ field: { onChange, value } }) => (
                 <XStack style={{ alignItems: "center" }}>
                   <Input
-                    placeholder="Password"
+                    placeholder={t("auth.password")}
                     value={value}
                     onChangeText={onChange}
                     secureTextEntry={!showPassword}
@@ -336,7 +348,7 @@ export default function Register() {
                       value={value}
                       onChangeText={onChange}
                       mask={[/\d/, /\d/, /\d/]}
-                      placeholder="Height (cm)"
+                      placeholder={t("register.height")}
                       placeholderTextColor={"#9CA3AF" as any}
                       keyboardType="numeric"
                       style={{
@@ -368,7 +380,7 @@ export default function Register() {
               onPress={() => setValue("sex", "male")}
             >
               <Text color={currentSex === "male" ? "white" : "#6B7280"}>
-                Male
+                {t("register.male")}
               </Text>
             </Button>
             <Button
@@ -383,7 +395,7 @@ export default function Register() {
               onPress={() => setValue("sex", "female")}
             >
               <Text color={currentSex === "female" ? "white" : "#6B7280"}>
-                Female
+                {t("register.female")}
               </Text>
             </Button>
           </XStack>
@@ -399,15 +411,15 @@ export default function Register() {
             {isLoading ? (
               <Spinner color="white" />
             ) : (
-              <Text color="white">Register</Text>
+              <Text color="white">{t("auth.register")}</Text>
             )}
           </Button>
 
           <XStack style={{ justifyContent: "center", gap: 7 }}>
-            <Text color="#6B7280">Already have an account?</Text>
+            <Text color="#6B7280">{t("auth.hasAccount")}</Text>
             <Link href="/(auth)/login">
               <Text color="#059669" fontWeight="bold">
-                Login
+                {t("auth.login")}
               </Text>
             </Link>
           </XStack>

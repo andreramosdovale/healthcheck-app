@@ -3,9 +3,11 @@ import { KeyboardAvoidingView, Platform } from "react-native";
 import { YStack, XStack, Text, Input, Button, Spinner } from "tamagui";
 import { Link, router } from "expo-router";
 import { Eye, EyeOff, Activity } from "@tamagui/lucide-icons";
+import { useTranslation } from "react-i18next";
 import { useAuthStore } from "../../src/stores/auth.store";
 
 export default function Login() {
+  const { t } = useTranslation();
   const [login, setLogin] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -16,7 +18,7 @@ export default function Login() {
 
   async function handleLogin() {
     if (!login || !password) {
-      setError("Fill in all fields");
+      setError(t("validation.fillAllFields"));
       return;
     }
 
@@ -27,7 +29,7 @@ export default function Login() {
       await authLogin(login, password);
       router.replace("/(app)/home");
     } catch (err: any) {
-      setError(err.response?.data?.message || "Login failed");
+      setError(err.response?.data?.message || t("validation.loginFailed"));
     } finally {
       setIsLoading(false);
     }
@@ -50,10 +52,10 @@ export default function Login() {
         <YStack style={{ alignItems: "center", gap: 7, marginBottom: 18 }}>
           <Activity size={48} color="#059669" />
           <Text fontSize="$8" fontWeight="bold" color="#111827">
-            HealthCheck
+            {t("auth.loginTitle")}
           </Text>
           <Text fontSize="$4" color="#6B7280">
-            Track your body composition
+            {t("auth.loginSubtitle")}
           </Text>
         </YStack>
 
@@ -72,7 +74,7 @@ export default function Login() {
         )}
 
         <Input
-          placeholder="Email or nickname"
+          placeholder={t("auth.emailOrNickname")}
           value={login}
           onChangeText={setLogin}
           autoCapitalize="none"
@@ -85,7 +87,7 @@ export default function Login() {
 
         <XStack style={{ alignItems: "center" }}>
           <Input
-            placeholder="Password"
+            placeholder={t("auth.password")}
             value={password}
             onChangeText={setPassword}
             secureTextEntry={!showPassword}
@@ -119,15 +121,15 @@ export default function Login() {
           {isLoading ? (
             <Spinner color="white" />
           ) : (
-            <Text color="white">Login</Text>
+            <Text color="white">{t("auth.login")}</Text>
           )}
         </Button>
 
         <XStack style={{ justifyContent: "center", gap: 7 }}>
-          <Text color="#6B7280">Don't have an account?</Text>
+          <Text color="#6B7280">{t("auth.noAccount")}</Text>
           <Link href="/(auth)/register">
             <Text color="#059669" fontWeight="bold">
-              Register
+              {t("auth.register")}
             </Text>
           </Link>
         </XStack>
