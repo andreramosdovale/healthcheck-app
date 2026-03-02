@@ -39,13 +39,15 @@ export default function Login() {
       style={{ flex: 1 }}
     >
       <YStack
-        flex={1}
-        justifyContent="center"
-        padding="$4"
-        gap="$4"
-        backgroundColor="#F9FAFB"
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          padding: 18,
+          gap: 18,
+          backgroundColor: "#F9FAFB",
+        }}
       >
-        <YStack alignItems="center" gap="$2" marginBottom="$4">
+        <YStack style={{ alignItems: "center", gap: 7, marginBottom: 18 }}>
           <Activity size={48} color="#059669" />
           <Text fontSize="$8" fontWeight="bold" color="#111827">
             HealthCheck
@@ -56,8 +58,14 @@ export default function Login() {
         </YStack>
 
         {error && (
-          <YStack backgroundColor="#FEF2F2" padding="$3" borderRadius="$2">
-            <Text color="#DC2626" textAlign="center">
+          <YStack
+            style={{
+              backgroundColor: "#FEF2F2",
+              padding: 13,
+              borderRadius: 5,
+            }}
+          >
+            <Text color="#DC2626" style={{ textAlign: "center" }}>
               {error}
             </Text>
           </YStack>
@@ -70,12 +78,12 @@ export default function Login() {
           autoCapitalize="none"
           keyboardType="email-address"
           size="$4"
-          backgroundColor="white"
+          bg="white"
           borderColor="#E5E7EB"
-          placeholderTextColor="#9CA3AF"
+          placeholderTextColor={"#9CA3AF" as any}
         />
 
-        <XStack alignItems="center">
+        <XStack style={{ alignItems: "center" }}>
           <Input
             placeholder="Password"
             value={password}
@@ -83,13 +91,12 @@ export default function Login() {
             secureTextEntry={!showPassword}
             size="$4"
             flex={1}
-            backgroundColor="white"
+            bg="white"
             borderColor="#E5E7EB"
-            placeholderTextColor="#9CA3AF"
+            placeholderTextColor={"#9CA3AF" as any}
           />
           <Button
-            position="absolute"
-            right={0}
+            style={{ position: "absolute", right: 0 }}
             size="$3"
             chromeless
             onPress={() => setShowPassword(!showPassword)}
@@ -106,14 +113,17 @@ export default function Login() {
           onPress={handleLogin}
           disabled={isLoading}
           size="$4"
-          backgroundColor="#059669"
-          pressStyle={{ backgroundColor: "#047857" }}
-          color="white"
+          bg="#059669"
+          pressStyle={{ bg: "#047857" }}
         >
-          {isLoading ? <Spinner color="white" /> : "Login"}
+          {isLoading ? (
+            <Spinner color="white" />
+          ) : (
+            <Text color="white">Login</Text>
+          )}
         </Button>
 
-        <XStack justifyContent="center" gap="$2">
+        <XStack style={{ justifyContent: "center", gap: 7 }}>
           <Text color="#6B7280">Don't have an account?</Text>
           <Link href="/(auth)/register">
             <Text color="#059669" fontWeight="bold">

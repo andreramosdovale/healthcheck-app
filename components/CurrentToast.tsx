@@ -16,9 +16,8 @@ export function CurrentToast() {
       y={isWeb ? "$12" : 0}
       theme="accent"
       rounded="$6"
-      transition="quick"
     >
-      <YStack items="center" padding="$2" gap="$2">
+      <YStack items="center" gap="$2" p="$2">
         <Toast.Title fontWeight="bold">{currentToast.title}</Toast.Title>
         {!!currentToast.message && (
           <Toast.Description>{currentToast.message}</Toast.Description>

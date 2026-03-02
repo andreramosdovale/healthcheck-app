@@ -123,13 +123,15 @@ export default function Register() {
         style={{ backgroundColor: "#F9FAFB" }}
       >
         <YStack
-          flex={1}
-          justifyContent="center"
-          padding="$4"
-          gap="$3"
-          backgroundColor="#F9FAFB"
+          style={{
+            flex: 1,
+            justifyContent: "center",
+            padding: 18,
+            gap: 13,
+            backgroundColor: "#F9FAFB",
+          }}
         >
-          <YStack alignItems="center" gap="$2" marginBottom="$2">
+          <YStack style={{ alignItems: "center", gap: 7, marginBottom: 7 }}>
             <Activity size={40} color="#059669" />
             <Text fontSize="$7" fontWeight="bold" color="#111827">
               Create Account
@@ -140,14 +142,20 @@ export default function Register() {
           </YStack>
 
           {apiError && (
-            <YStack backgroundColor="#FEF2F2" padding="$3" borderRadius="$2">
-              <Text color="#DC2626" textAlign="center">
+            <YStack
+              style={{
+                backgroundColor: "#FEF2F2",
+                padding: 13,
+                borderRadius: 5,
+              }}
+            >
+              <Text color="#DC2626" style={{ textAlign: "center" }}>
                 {apiError}
               </Text>
             </YStack>
           )}
 
-          <YStack gap="$1">
+          <YStack style={{ gap: 2 }}>
             <Controller
               control={control}
               name="name"
@@ -157,20 +165,20 @@ export default function Register() {
                   value={value}
                   onChangeText={onChange}
                   size="$4"
-                  backgroundColor="white"
+                  bg="white"
                   borderColor={errors.name ? "#DC2626" : "#E5E7EB"}
-                  placeholderTextColor="#9CA3AF"
+                  placeholderTextColor={"#9CA3AF" as any}
                 />
               )}
             />
             {errors.name && (
-              <Text color="#DC2626" fontSize="$2" marginLeft="$1">
+              <Text color="#DC2626" fontSize="$2" style={{ marginLeft: 2 }}>
                 {errors.name.message}
               </Text>
             )}
           </YStack>
 
-          <YStack gap="$1">
+          <YStack style={{ gap: 2 }}>
             <Controller
               control={control}
               name="email"
@@ -182,20 +190,20 @@ export default function Register() {
                   autoCapitalize="none"
                   keyboardType="email-address"
                   size="$4"
-                  backgroundColor="white"
+                  bg="white"
                   borderColor={errors.email ? "#DC2626" : "#E5E7EB"}
-                  placeholderTextColor="#9CA3AF"
+                  placeholderTextColor={"#9CA3AF" as any}
                 />
               )}
             />
             {errors.email && (
-              <Text color="#DC2626" fontSize="$2" marginLeft="$1">
+              <Text color="#DC2626" fontSize="$2" style={{ marginLeft: 2 }}>
                 {errors.email.message}
               </Text>
             )}
           </YStack>
 
-          <YStack gap="$1">
+          <YStack style={{ gap: 2 }}>
             <Controller
               control={control}
               name="nickname"
@@ -206,25 +214,25 @@ export default function Register() {
                   onChangeText={onChange}
                   autoCapitalize="none"
                   size="$4"
-                  backgroundColor="white"
+                  bg="white"
                   borderColor={errors.nickname ? "#DC2626" : "#E5E7EB"}
-                  placeholderTextColor="#9CA3AF"
+                  placeholderTextColor={"#9CA3AF" as any}
                 />
               )}
             />
             {errors.nickname && (
-              <Text color="#DC2626" fontSize="$2" marginLeft="$1">
+              <Text color="#DC2626" fontSize="$2" style={{ marginLeft: 2 }}>
                 {errors.nickname.message}
               </Text>
             )}
           </YStack>
 
-          <YStack gap="$1">
+          <YStack style={{ gap: 2 }}>
             <Controller
               control={control}
               name="password"
               render={({ field: { onChange, value } }) => (
-                <XStack alignItems="center">
+                <XStack style={{ alignItems: "center" }}>
                   <Input
                     placeholder="Password"
                     value={value}
@@ -232,13 +240,12 @@ export default function Register() {
                     secureTextEntry={!showPassword}
                     size="$4"
                     flex={1}
-                    backgroundColor="white"
+                    bg="white"
                     borderColor={errors.password ? "#DC2626" : "#E5E7EB"}
-                    placeholderTextColor="#9CA3AF"
+                    placeholderTextColor={"#9CA3AF" as any}
                   />
                   <Button
-                    position="absolute"
-                    right={0}
+                    style={{ position: "absolute", right: 0 }}
                     size="$3"
                     chromeless
                     onPress={() => setShowPassword(!showPassword)}
@@ -253,26 +260,28 @@ export default function Register() {
               )}
             />
             {errors.password && (
-              <Text color="#DC2626" fontSize="$2" marginLeft="$1">
+              <Text color="#DC2626" fontSize="$2" style={{ marginLeft: 2 }}>
                 {errors.password.message}
               </Text>
             )}
           </YStack>
 
-          <XStack gap="$3">
-            <YStack flex={1} gap="$1">
+          <XStack style={{ gap: 13 }}>
+            <YStack style={{ flex: 1, gap: 2 }}>
               <Controller
                 control={control}
                 name="birthDate"
                 render={({ field: { onChange, value } }) => (
                   <YStack
-                    borderWidth={1}
-                    borderColor={errors.birthDate ? "#DC2626" : "#E5E7EB"}
-                    borderRadius="$4"
-                    backgroundColor="white"
-                    height={50}
-                    justifyContent="center"
-                    paddingHorizontal="$3"
+                    style={{
+                      borderWidth: 1,
+                      borderColor: errors.birthDate ? "#DC2626" : "#E5E7EB",
+                      borderRadius: 9,
+                      backgroundColor: "white",
+                      height: 50,
+                      justifyContent: "center",
+                      paddingHorizontal: 13,
+                    }}
                   >
                     <MaskInput
                       value={value}
@@ -290,7 +299,7 @@ export default function Register() {
                         /\d/,
                       ]}
                       placeholder="DD/MM/YYYY"
-                      placeholderTextColor="#9CA3AF"
+                      placeholderTextColor={"#9CA3AF" as any}
                       keyboardType="numeric"
                       style={{
                         fontSize: 16,
@@ -301,32 +310,34 @@ export default function Register() {
                 )}
               />
               {errors.birthDate && (
-                <Text color="#DC2626" fontSize="$2" marginLeft="$1">
+                <Text color="#DC2626" fontSize="$2" style={{ marginLeft: 2 }}>
                   {errors.birthDate.message}
                 </Text>
               )}
             </YStack>
 
-            <YStack flex={1} gap="$1">
+            <YStack style={{ flex: 1, gap: 2 }}>
               <Controller
                 control={control}
                 name="height"
                 render={({ field: { onChange, value } }) => (
                   <YStack
-                    borderWidth={1}
-                    borderColor={errors.height ? "#DC2626" : "#E5E7EB"}
-                    borderRadius="$4"
-                    backgroundColor="white"
-                    height={50}
-                    justifyContent="center"
-                    paddingHorizontal="$3"
+                    style={{
+                      borderWidth: 1,
+                      borderColor: errors.height ? "#DC2626" : "#E5E7EB",
+                      borderRadius: 9,
+                      backgroundColor: "white",
+                      height: 50,
+                      justifyContent: "center",
+                      paddingHorizontal: 13,
+                    }}
                   >
                     <MaskInput
                       value={value}
                       onChangeText={onChange}
                       mask={[/\d/, /\d/, /\d/]}
                       placeholder="Height (cm)"
-                      placeholderTextColor="#9CA3AF"
+                      placeholderTextColor={"#9CA3AF" as any}
                       keyboardType="numeric"
                       style={{
                         fontSize: 16,
@@ -337,22 +348,22 @@ export default function Register() {
                 )}
               />
               {errors.height && (
-                <Text color="#DC2626" fontSize="$2" marginLeft="$1">
+                <Text color="#DC2626" fontSize="$2" style={{ marginLeft: 2 }}>
                   {errors.height.message}
                 </Text>
               )}
             </YStack>
           </XStack>
 
-          <XStack gap="$2">
+          <XStack style={{ gap: 7 }}>
             <Button
               flex={1}
               size="$4"
-              backgroundColor={currentSex === "male" ? "#059669" : "white"}
+              bg={currentSex === "male" ? "#059669" : "white"}
               borderColor="#E5E7EB"
               borderWidth={1}
               pressStyle={{
-                backgroundColor: currentSex === "male" ? "#047857" : "#F3F4F6",
+                bg: currentSex === "male" ? "#047857" : "#F3F4F6",
               }}
               onPress={() => setValue("sex", "male")}
             >
@@ -363,12 +374,11 @@ export default function Register() {
             <Button
               flex={1}
               size="$4"
-              backgroundColor={currentSex === "female" ? "#059669" : "white"}
+              bg={currentSex === "female" ? "#059669" : "white"}
               borderColor="#E5E7EB"
               borderWidth={1}
               pressStyle={{
-                backgroundColor:
-                  currentSex === "female" ? "#047857" : "#F3F4F6",
+                bg: currentSex === "female" ? "#047857" : "#F3F4F6",
               }}
               onPress={() => setValue("sex", "female")}
             >
@@ -382,9 +392,9 @@ export default function Register() {
             onPress={handleSubmit(onSubmit)}
             disabled={isLoading}
             size="$4"
-            backgroundColor="#059669"
-            pressStyle={{ backgroundColor: "#047857" }}
-            marginTop="$2"
+            bg="#059669"
+            pressStyle={{ bg: "#047857" }}
+            mt="$2"
           >
             {isLoading ? (
               <Spinner color="white" />
@@ -393,7 +403,7 @@ export default function Register() {
             )}
           </Button>
 
-          <XStack justifyContent="center" gap="$2">
+          <XStack style={{ justifyContent: "center", gap: 7 }}>
             <Text color="#6B7280">Already have an account?</Text>
             <Link href="/(auth)/login">
               <Text color="#059669" fontWeight="bold">

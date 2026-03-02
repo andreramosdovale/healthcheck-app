@@ -21,7 +21,10 @@ export default function Index() {
   }, [isLoading, isAuthenticated]);
 
   return (
-    <YStack f={1} jc="center" ai="center" bg="$background" gap="$4">
+    <YStack
+      style={{ flex: 1, justifyContent: "center", alignItems: "center", gap: 18 }}
+      bg="$background"
+    >
       <Text fontSize="$8" fontWeight="bold">
         HealthCheck
       </Text>
