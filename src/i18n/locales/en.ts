@@ -32,6 +32,12 @@ export default {
     height: "Height (cm)",
     male: "Male",
     female: "Female",
+    readTerms: "Read and accept terms of use",
+    termsAccepted: "Terms accepted",
+    termsTitle: "Terms of Use",
+    scrollToEnd: "Scroll to the end to continue",
+    confirm: "Confirm",
+    decline: "Decline",
   },
   validation: {
     required: "Required field",
@@ -50,6 +56,7 @@ export default {
     fillAllFields: "Fill in all fields",
     loginFailed: "Login failed",
     registerFailed: "Registration failed",
+    termsRequired: "You must accept the terms of use",
   },
   home: {
     welcome: "Welcome",
