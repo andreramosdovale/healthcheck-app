@@ -439,7 +439,7 @@ export default function Register() {
                   bg: currentSex === "female" ? "#047857" : "#F3F4F6",
                 }}
                 onPress={() =>
-                  setValue("sex", "male", { shouldValidate: true })
+                  setValue("sex", "female", { shouldValidate: true })
                 }
               >
                 <Text color={currentSex === "female" ? "white" : "#6B7280"}>

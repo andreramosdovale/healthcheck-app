@@ -10,9 +10,11 @@ import {
   ThemeProvider,
 } from "@react-navigation/native";
 import { useFonts } from "expo-font";
-import { SplashScreen, Stack } from "expo-router";
+import { SplashScreen, Stack, router } from "expo-router";
 import { Provider } from "components/Provider";
 import { QueryProvider } from "src/providers/query.provider";
+import { authEvents } from "src/lib/authEvents";
+import { useAuthStore } from "src/stores/auth.store";
 
 export { ErrorBoundary } from "expo-router";
 
@@ -45,6 +47,14 @@ export default function RootLayout() {
 
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
+  const clearAuth = useAuthStore((state) => state.clearAuth);
+
+  useEffect(() => {
+    return authEvents.onSessionExpired(async () => {
+      await clearAuth();
+      router.replace("/(auth)/login");
+    });
+  }, []);
 
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>

@@ -1,5 +1,6 @@
 import axios from "axios";
-import * as SecureStore from "expo-secure-store";
+import { authEvents } from "../lib/authEvents";
+import { storage } from "../lib/storage";
 
 const API_URL = "http://192.168.1.144:3000";
 
@@ -11,7 +12,7 @@ export const api = axios.create({
 });
 
 api.interceptors.request.use(async (config) => {
-  const token = await SecureStore.getItemAsync("accessToken");
+  const token = await storage.getItem("accessToken");
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -27,19 +28,18 @@ api.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        const refreshToken = await SecureStore.getItemAsync("refreshToken");
+        const refreshToken = await storage.getItem("refreshToken");
         const { data } = await axios.post(`${API_URL}/auth/refresh`, {
           refreshToken,
         });
 
-        await SecureStore.setItemAsync("accessToken", data.accessToken);
-        await SecureStore.setItemAsync("refreshToken", data.refreshToken);
+        await storage.setItem("accessToken", data.accessToken);
+        await storage.setItem("refreshToken", data.refreshToken);
 
         originalRequest.headers.Authorization = `Bearer ${data.accessToken}`;
         return api(originalRequest);
       } catch {
-        await SecureStore.deleteItemAsync("accessToken");
-        await SecureStore.deleteItemAsync("refreshToken");
+        authEvents.emitSessionExpired();
       }
     }
 

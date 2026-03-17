@@ -1,6 +1,6 @@
 import { create } from "zustand";
-import * as SecureStore from "expo-secure-store";
 import { api } from "../services/api";
+import { storage } from "../lib/storage";
 
 interface User {
   id: string;
@@ -17,6 +17,7 @@ interface AuthState {
   login: (login: string, password: string) => Promise<void>;
   register: (data: RegisterData) => Promise<void>;
   logout: () => Promise<void>;
+  clearAuth: () => Promise<void>;
   loadUser: () => Promise<void>;
 }
 
@@ -39,8 +40,8 @@ export const useAuthStore = create<AuthState>((set) => ({
   login: async (login, password) => {
     const { data } = await api.post("/auth/login", { login, password });
 
-    await SecureStore.setItemAsync("accessToken", data.accessToken);
-    await SecureStore.setItemAsync("refreshToken", data.refreshToken);
+    await storage.setItem("accessToken", data.accessToken);
+    await storage.setItem("refreshToken", data.refreshToken);
 
     set({ user: data.user, isAuthenticated: true });
   },
@@ -48,15 +49,21 @@ export const useAuthStore = create<AuthState>((set) => ({
   register: async (registerData) => {
     const { data } = await api.post("/auth/register", registerData);
 
-    await SecureStore.setItemAsync("accessToken", data.accessToken);
-    await SecureStore.setItemAsync("refreshToken", data.refreshToken);
+    await storage.setItem("accessToken", data.accessToken);
+    await storage.setItem("refreshToken", data.refreshToken);
 
     set({ user: data.user, isAuthenticated: true });
   },
 
+  clearAuth: async () => {
+    await storage.deleteItem("accessToken");
+    await storage.deleteItem("refreshToken");
+    set({ user: null, isAuthenticated: false });
+  },
+
   logout: async () => {
     try {
-      const refreshToken = await SecureStore.getItemAsync("refreshToken");
+      const refreshToken = await storage.getItem("refreshToken");
       if (refreshToken) {
         await api.post("/auth/logout", { refreshToken });
       }
@@ -64,15 +71,15 @@ export const useAuthStore = create<AuthState>((set) => ({
       // Ignora erro no logout
     }
 
-    await SecureStore.deleteItemAsync("accessToken");
-    await SecureStore.deleteItemAsync("refreshToken");
+    await storage.deleteItem("accessToken");
+    await storage.deleteItem("refreshToken");
 
     set({ user: null, isAuthenticated: false });
   },
 
   loadUser: async () => {
     try {
-      const token = await SecureStore.getItemAsync("accessToken");
+      const token = await storage.getItem("accessToken");
 
       if (!token) {
         set({ isLoading: false });
@@ -82,8 +89,8 @@ export const useAuthStore = create<AuthState>((set) => ({
       const { data } = await api.get("/users/me");
       set({ user: data, isAuthenticated: true, isLoading: false });
     } catch {
-      await SecureStore.deleteItemAsync("accessToken");
-      await SecureStore.deleteItemAsync("refreshToken");
+      await storage.deleteItem("accessToken");
+      await storage.deleteItem("refreshToken");
       set({ user: null, isAuthenticated: false, isLoading: false });
     }
   },
