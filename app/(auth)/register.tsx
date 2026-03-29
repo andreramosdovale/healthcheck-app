@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState } from "react";
 import {
   KeyboardAvoidingView,
   Platform,
@@ -165,7 +165,7 @@ export default function Register() {
         height: parseFloat(data.height),
         termsAccepted: true,
       });
-      router.replace("/(app)/home");
+      router.replace("/(app)/measurements");
     } catch (err: any) {
       setApiError(
         err.response?.data?.message || t("validation.registerFailed"),

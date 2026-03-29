@@ -66,4 +66,20 @@ export default {
     welcome: "Bem-vindo",
     plan: "Plano",
   },
+  measurements: {
+    title: "Medições",
+    empty: "Nenhuma medição registrada",
+    emptySubtitle:
+      "Adicione sua primeira medição para começar a acompanhar seu progresso",
+    addFirst: "Adicionar primeira medição",
+    add: "Nova medição",
+    weight: "Peso",
+    bodyFat: "Gordura corporal",
+    leanMass: "Massa magra",
+    fatMass: "Massa gorda",
+    delete: "Excluir",
+    deleteConfirm: "Deseja excluir esta medição?",
+    deleteSuccess: "Medição excluída",
+    kg: "kg",
+  },
 };
