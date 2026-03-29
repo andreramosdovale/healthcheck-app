@@ -29,7 +29,14 @@ export default function Login() {
       await authLogin(login, password);
       router.replace("/(app)/home");
     } catch (err: any) {
-      setError(err.response?.data?.message || t("validation.loginFailed"));
+      const status = err.response?.status;
+      if (status === 401) {
+        setError(t("auth.invalidCredentials"));
+      } else if (status === 403) {
+        setError(t("auth.accountInactive"));
+      } else {
+        setError(err.response?.data?.message || t("validation.loginFailed"));
+      }
     } finally {
       setIsLoading(false);
     }

@@ -23,11 +23,13 @@ const useRegisterSchema = () => {
     name: z
       .string()
       .min(1, t("validation.required"))
-      .min(2, t("validation.nameMin")),
+      .min(2, t("validation.nameMin"))
+      .max(100, t("validation.nameMax")),
     email: z
       .string()
       .min(1, t("validation.required"))
-      .email(t("validation.invalidEmail")),
+      .email(t("validation.invalidEmail"))
+      .max(256, t("validation.emailMax")),
     nickname: z
       .string()
       .min(1, t("validation.required"))
@@ -59,7 +61,12 @@ const useRegisterSchema = () => {
         const [day, month, year] = val.split("/").map(Number);
         const date = new Date(year, month - 1, day);
         const today = new Date();
-        const age = today.getFullYear() - date.getFullYear();
+        const yearDiff = today.getFullYear() - date.getFullYear();
+        const notYetBirthday =
+          today.getMonth() < date.getMonth() ||
+          (today.getMonth() === date.getMonth() &&
+            today.getDate() < date.getDate());
+        const age = yearDiff - (notYetBirthday ? 1 : 0);
         return age >= 10 && age <= 120;
       }, t("validation.ageRange")),
     height: z

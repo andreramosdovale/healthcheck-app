@@ -25,6 +25,8 @@ export default {
     registerTitle: "Criar Conta",
     registerSubtitle: "Comece a acompanhar seu progresso",
     emailOrNickname: "Email ou apelido",
+    invalidCredentials: "E-mail/nickname ou senha incorretos.",
+    accountInactive: "Sua conta está inativa. Entre em contato com o suporte.",
   },
   register: {
     name: "Nome",
@@ -57,6 +59,8 @@ export default {
     loginFailed: "Falha no login",
     registerFailed: "Falha no cadastro",
     termsRequired: "Você deve aceitar os termos de uso",
+    nameMax: "Nome deve ter no máximo 100 caracteres",
+    emailMax: "E-mail deve ter no máximo 256 caracteres",
   },
   home: {
     welcome: "Bem-vindo",

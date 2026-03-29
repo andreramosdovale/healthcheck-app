@@ -25,6 +25,8 @@ export default {
     registerTitle: "Create Account",
     registerSubtitle: "Start tracking your progress",
     emailOrNickname: "Email or nickname",
+    invalidCredentials: "Invalid credentials.",
+    accountInactive: "Your account is inactive. Please contact support.",
   },
   register: {
     name: "Name",
@@ -57,6 +59,8 @@ export default {
     loginFailed: "Login failed",
     registerFailed: "Registration failed",
     termsRequired: "You must accept the terms of use",
+    nameMax: "Name must be at most 100 characters",
+    emailMax: "Email must be at most 256 characters",
   },
   home: {
     welcome: "Welcome",
