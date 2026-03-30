@@ -2,7 +2,7 @@ import { useState } from "react";
 import { FlatList, RefreshControl, Alert } from "react-native";
 import { YStack, XStack, Text, Button, Spinner, Card } from "tamagui";
 import { router } from "expo-router";
-import { Plus, Trash2, Scale, Droplets, Dumbbell } from "@tamagui/lucide-icons";
+import { Plus, Trash2, Scale, Droplets, Dumbbell, Eye } from "@tamagui/lucide-icons";
 import { useTranslation } from "react-i18next";
 import {
   useMeasurements,
@@ -187,15 +187,30 @@ export default function MeasurementsList() {
                 </XStack>
               </YStack>
 
-              {/* Delete Button */}
-              <Button
-                size="$2"
-                backgroundColor="transparent"
-                pressStyle={{ backgroundColor: "#FEE2E2" }}
-                onPress={() => handleDelete(item.id)}
-              >
-                <Trash2 size={18} color="#DC2626" />
-              </Button>
+              {/* Actions */}
+              <XStack gap={4}>
+                <Button
+                  size="$2"
+                  background="transparent"
+                  pressStyle={{ background: "#ECFDF5" }}
+                  onPress={() =>
+                    router.push({
+                      pathname: "/(app)/measurements/[id]",
+                      params: { id: item.id },
+                    })
+                  }
+                >
+                  <Eye size={18} color="#059669" />
+                </Button>
+                <Button
+                  size="$2"
+                  background="transparent"
+                  pressStyle={{ background: "#FEE2E2" }}
+                  onPress={() => handleDelete(item.id)}
+                >
+                  <Trash2 size={18} color="#DC2626" />
+                </Button>
+              </XStack>
             </XStack>
           </Card>
         )}
