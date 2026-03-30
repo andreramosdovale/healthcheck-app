@@ -73,6 +73,84 @@ export function useMeasurement(id: string) {
   });
 }
 
+type DeltaDirection = "up" | "down" | "stable" | null;
+
+export interface MeasurementDelta {
+  measurementId: string;
+  previousMeasurementId: string | null;
+  delta: {
+    // composição corporal
+    weight: DeltaDirection;
+    bodyFatPercentage: DeltaDirection;
+    leanMass: DeltaDirection;
+    fatMass: DeltaDirection;
+    // dobras cutâneas
+    triceps: DeltaDirection;
+    subscapular: DeltaDirection;
+    chest: DeltaDirection;
+    midaxillary: DeltaDirection;
+    suprailiac: DeltaDirection;
+    abdominal: DeltaDirection;
+    thigh: DeltaDirection;
+    skinfoldSum: DeltaDirection;
+    // circunferências
+    neck: DeltaDirection;
+    waist: DeltaDirection;
+    hip: DeltaDirection;
+    shoulders: DeltaDirection;
+    chestCirc: DeltaDirection;
+    leftBicepFlexed: DeltaDirection;
+    rightBicepFlexed: DeltaDirection;
+  } | null;
+}
+
+const DOWN_IS_GOOD = [
+  "bodyFatPercentage",
+  "fatMass",
+  "triceps",
+  "subscapular",
+  "chest",
+  "midaxillary",
+  "suprailiac",
+  "abdominal",
+  "thigh",
+  "skinfoldSum",
+  "waist",
+  "hip",
+  "neck",
+  "chestCirc",
+];
+const UP_IS_GOOD = ["leanMass", "leftBicepFlexed", "rightBicepFlexed"];
+
+export function getDeltaIndicator(
+  field: string,
+  direction: DeltaDirection,
+): { arrow: "↑" | "↓"; color: string } | null {
+  if (!direction || direction === "stable") return null;
+
+  if (field === "weight") return { arrow: direction === "up" ? "↑" : "↓", color: "#6B7280" };
+
+  const isPositive =
+    (DOWN_IS_GOOD.includes(field) && direction === "down") ||
+    (UP_IS_GOOD.includes(field) && direction === "up");
+
+  return {
+    arrow: direction === "up" ? "↑" : "↓",
+    color: isPositive ? "#22c55e" : "#ef4444",
+  };
+}
+
+export function useMeasurementDelta(id: string) {
+  return useQuery({
+    queryKey: ["measurements-delta", id],
+    queryFn: async () => {
+      const { data } = await api.get<MeasurementDelta>(`/evolution/delta/${id}`);
+      return data;
+    },
+    enabled: !!id,
+  });
+}
+
 export function useDeleteMeasurement() {
   const queryClient = useQueryClient();
 

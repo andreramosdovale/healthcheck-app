@@ -12,12 +12,23 @@ import {
   Activity,
 } from "@tamagui/lucide-icons";
 import { useTranslation } from "react-i18next";
-import { useMeasurement } from "../../../src/hooks/useMeasurements";
+import {
+  useMeasurement,
+  useMeasurementDelta,
+  getDeltaIndicator,
+  type MeasurementDelta,
+} from "../../../src/hooks/useMeasurements";
+
+type Delta = MeasurementDelta["delta"];
 
 export default function ViewMeasurement() {
   const { t } = useTranslation();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { data: measurement, isLoading } = useMeasurement(id);
+  const { data: measurement, isLoading: loadingMeasurement } = useMeasurement(id);
+  const { data: deltaData, isLoading: loadingDelta } = useMeasurementDelta(id);
+
+  const isLoading = loadingMeasurement || loadingDelta;
+  const delta = deltaData?.delta ?? null;
 
   function formatDate(dateString: string) {
     const date = new Date(dateString);
@@ -63,12 +74,7 @@ export default function ViewMeasurement() {
         borderBottomColor="#E5E7EB"
         gap={12}
       >
-        <Button
-          size="$3"
-          chromeless
-          circular
-          onPress={() => router.back()}
-        >
+        <Button size="$3" chromeless circular onPress={() => router.back()}>
           <ChevronLeft size={22} color="#111827" />
         </Button>
         <Text fontSize="$6" fontWeight="bold" color="#111827">
@@ -100,11 +106,12 @@ export default function ViewMeasurement() {
             </IconBadge>
             <YStack flex={1}>
               <Text fontSize="$2" color="#6B7280">{t("measurements.weight")}</Text>
-              <XStack alignItems="baseline" gap={4}>
+              <XStack alignItems="baseline" gap={6}>
                 <Text fontSize="$8" fontWeight="bold" color="#111827">
                   {measurement.weight.toFixed(1)}
                 </Text>
                 <Text fontSize="$4" color="#6B7280">{t("measurements.kg")}</Text>
+                <DeltaArrow field="weight" delta={delta} />
               </XStack>
             </YStack>
           </XStack>
@@ -134,12 +141,16 @@ export default function ViewMeasurement() {
                 label={t("measurements.bodyFat")}
                 value={`${fmt(calculated.bodyFatPercentage)} %`}
                 icon={<Droplets size={14} color="#3B82F6" />}
+                field="bodyFatPercentage"
+                delta={delta}
               />
               {calculated.leanMass != null && (
                 <DataRow
                   label={t("measurements.leanMass")}
                   value={`${fmt(calculated.leanMass)} ${t("measurements.kg")}`}
                   icon={<Dumbbell size={14} color="#8B5CF6" />}
+                  field="leanMass"
+                  delta={delta}
                 />
               )}
               {calculated.fatMass != null && (
@@ -147,6 +158,8 @@ export default function ViewMeasurement() {
                   label={t("measurements.fatMass")}
                   value={`${fmt(calculated.fatMass)} ${t("measurements.kg")}`}
                   icon={<Flame size={14} color="#F97316" />}
+                  field="fatMass"
+                  delta={delta}
                 />
               )}
             </YStack>
@@ -160,19 +173,23 @@ export default function ViewMeasurement() {
               <IconBadge color="#FFF7ED">
                 <Droplets size={20} color="#F97316" />
               </IconBadge>
-              <Text fontSize="$4" fontWeight="bold" color="#111827">
-                {t("measurements.skinfolds")}
-              </Text>
+              <YStack flex={1}>
+                <Text fontSize="$4" fontWeight="bold" color="#111827">
+                  {t("measurements.skinfolds")}
+                </Text>
+              </YStack>
+              {/* skinfoldSum indicator on the section header */}
+              <DeltaArrow field="skinfoldSum" delta={delta} size="$4" />
             </XStack>
             <Separator marginBottom={12} />
             <YStack gap={10}>
-              <DataRow label={t("measurements.skinfold_triceps")} value={`${fmt(skinfolds.triceps)} mm`} />
-              <DataRow label={t("measurements.skinfold_subscapular")} value={`${fmt(skinfolds.subscapular)} mm`} />
-              <DataRow label={t("measurements.skinfold_chest")} value={`${fmt(skinfolds.chest)} mm`} />
-              <DataRow label={t("measurements.skinfold_midaxillary")} value={`${fmt(skinfolds.midaxillary)} mm`} />
-              <DataRow label={t("measurements.skinfold_suprailiac")} value={`${fmt(skinfolds.suprailiac)} mm`} />
-              <DataRow label={t("measurements.skinfold_abdominal")} value={`${fmt(skinfolds.abdominal)} mm`} />
-              <DataRow label={t("measurements.skinfold_thigh")} value={`${fmt(skinfolds.thigh)} mm`} />
+              <DataRow label={t("measurements.skinfold_triceps")} value={`${fmt(skinfolds.triceps)} mm`} field="triceps" delta={delta} />
+              <DataRow label={t("measurements.skinfold_subscapular")} value={`${fmt(skinfolds.subscapular)} mm`} field="subscapular" delta={delta} />
+              <DataRow label={t("measurements.skinfold_chest")} value={`${fmt(skinfolds.chest)} mm`} field="chest" delta={delta} />
+              <DataRow label={t("measurements.skinfold_midaxillary")} value={`${fmt(skinfolds.midaxillary)} mm`} field="midaxillary" delta={delta} />
+              <DataRow label={t("measurements.skinfold_suprailiac")} value={`${fmt(skinfolds.suprailiac)} mm`} field="suprailiac" delta={delta} />
+              <DataRow label={t("measurements.skinfold_abdominal")} value={`${fmt(skinfolds.abdominal)} mm`} field="abdominal" delta={delta} />
+              <DataRow label={t("measurements.skinfold_thigh")} value={`${fmt(skinfolds.thigh)} mm`} field="thigh" delta={delta} />
             </YStack>
           </Card>
         )}
@@ -191,19 +208,44 @@ export default function ViewMeasurement() {
             <Separator marginBottom={12} />
             <YStack gap={10}>
               {circumferences.neck != null && (
-                <DataRow label={t("measurements.circ_neck")} value={`${fmt(circumferences.neck)} cm`} />
+                <DataRow
+                  label={t("measurements.circ_neck")}
+                  value={`${fmt(circumferences.neck)} cm`}
+                  field="neck"
+                  delta={delta}
+                />
               )}
               {circumferences.shoulders != null && (
-                <DataRow label={t("measurements.circ_shoulders")} value={`${fmt(circumferences.shoulders)} cm`} />
+                <DataRow
+                  label={t("measurements.circ_shoulders")}
+                  value={`${fmt(circumferences.shoulders)} cm`}
+                  field="shoulders"
+                  delta={delta}
+                />
               )}
               {circumferences.chestCirc != null && (
-                <DataRow label={t("measurements.circ_chest")} value={`${fmt(circumferences.chestCirc)} cm`} />
+                <DataRow
+                  label={t("measurements.circ_chest")}
+                  value={`${fmt(circumferences.chestCirc)} cm`}
+                  field="chestCirc"
+                  delta={delta}
+                />
               )}
               {circumferences.waist != null && (
-                <DataRow label={t("measurements.circ_waist")} value={`${fmt(circumferences.waist)} cm`} />
+                <DataRow
+                  label={t("measurements.circ_waist")}
+                  value={`${fmt(circumferences.waist)} cm`}
+                  field="waist"
+                  delta={delta}
+                />
               )}
               {circumferences.hip != null && (
-                <DataRow label={t("measurements.circ_hip")} value={`${fmt(circumferences.hip)} cm`} />
+                <DataRow
+                  label={t("measurements.circ_hip")}
+                  value={`${fmt(circumferences.hip)} cm`}
+                  field="hip"
+                  delta={delta}
+                />
               )}
               {(circumferences.leftThigh != null || circumferences.rightThigh != null) && (
                 <DataRowPair
@@ -249,6 +291,28 @@ export default function ViewMeasurement() {
   );
 }
 
+// ─── Sub-components ──────────────────────────────────────────────────────────
+
+function DeltaArrow({
+  field,
+  delta,
+  size = "$3",
+}: {
+  field: string;
+  delta: Delta;
+  size?: string;
+}) {
+  if (!delta) return null;
+  const direction = (delta as Record<string, any>)[field] ?? null;
+  const indicator = getDeltaIndicator(field, direction);
+  if (!indicator) return null;
+  return (
+    <Text fontSize={size as any} fontWeight="bold" style={{ color: indicator.color }}>
+      {indicator.arrow}
+    </Text>
+  );
+}
+
 function IconBadge({ color, children }: { color: string; children: React.ReactNode }) {
   return (
     <YStack
@@ -268,10 +332,14 @@ function DataRow({
   label,
   value,
   icon,
+  field,
+  delta,
 }: {
   label: string;
   value: string;
   icon?: React.ReactNode;
+  field?: string;
+  delta?: Delta;
 }) {
   return (
     <XStack justifyContent="space-between" alignItems="center">
@@ -279,7 +347,10 @@ function DataRow({
         {icon}
         <Text fontSize="$3" color="#6B7280">{label}</Text>
       </XStack>
-      <Text fontSize="$3" fontWeight="600" color="#111827">{value}</Text>
+      <XStack alignItems="center" gap={6}>
+        <Text fontSize="$3" fontWeight="600" color="#111827">{value}</Text>
+        {field && delta ? <DeltaArrow field={field} delta={delta} /> : null}
+      </XStack>
     </XStack>
   );
 }
