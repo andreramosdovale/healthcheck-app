@@ -63,6 +63,8 @@ export default {
     emailMax: "E-mail deve ter no máximo 256 caracteres",
     weightRange: "Peso deve ser entre 20 e 500 kg",
     allSkinfoldsRequired: "Preencha todas as 7 dobras ou deixe todas em branco",
+    skinfoldRange: "Dobras devem estar entre 1 e 100 mm",
+    circumferenceRange: "Circunferências devem estar entre 10 e 200 cm",
   },
   home: {
     welcome: "Bem-vindo",
@@ -129,6 +131,8 @@ export default {
     neck: "Pescoço",
     waist: "Cintura",
     hip: "Quadril",
+    shoulders: "Ombros",
+    chestCirc: "Tórax",
     save: "Salvar medição",
     saving: "Salvando...",
     success: "Medição salva com sucesso!",

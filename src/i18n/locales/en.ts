@@ -63,6 +63,8 @@ export default {
     emailMax: "Email must be at most 256 characters",
     weightRange: "Weight must be between 20 and 500 kg",
     allSkinfoldsRequired: "Fill all 7 skinfolds or leave all empty",
+    skinfoldRange: "Skinfolds must be between 1 and 100 mm",
+    circumferenceRange: "Circumferences must be between 10 and 200 cm",
   },
   home: {
     welcome: "Welcome",
@@ -128,6 +130,8 @@ export default {
     neck: "Neck",
     waist: "Waist",
     hip: "Hip",
+    shoulders: "Shoulders",
+    chestCirc: "Chest circ.",
     save: "Save measurement",
     saving: "Saving...",
     success: "Measurement saved successfully!",
