@@ -27,7 +27,7 @@ export default function Login() {
 
     try {
       await authLogin(login, password);
-      router.replace("/(app)/measurements");
+      router.replace("/(app)/home");
     } catch (err: any) {
       const status = err.response?.status;
       if (status === 401) {

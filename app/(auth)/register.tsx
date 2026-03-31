@@ -165,7 +165,7 @@ export default function Register() {
         height: parseFloat(data.height),
         termsAccepted: true,
       });
-      router.replace("/(app)/measurements");
+      router.replace("/(app)/home");
     } catch (err: any) {
       setApiError(
         err.response?.data?.message || t("validation.registerFailed"),
