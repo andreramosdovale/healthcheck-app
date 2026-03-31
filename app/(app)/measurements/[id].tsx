@@ -254,6 +254,9 @@ export default function ViewMeasurement() {
                   rightLabel={t("measurements.right")}
                   leftValue={`${fmt(circumferences.leftThigh)} cm`}
                   rightValue={`${fmt(circumferences.rightThigh)} cm`}
+                  leftField="leftThigh"
+                  rightField="rightThigh"
+                  delta={delta}
                 />
               )}
               {(circumferences.leftCalf != null || circumferences.rightCalf != null) && (
@@ -263,6 +266,9 @@ export default function ViewMeasurement() {
                   rightLabel={t("measurements.right")}
                   leftValue={`${fmt(circumferences.leftCalf)} cm`}
                   rightValue={`${fmt(circumferences.rightCalf)} cm`}
+                  leftField="leftCalf"
+                  rightField="rightCalf"
+                  delta={delta}
                 />
               )}
               {(circumferences.leftBicepRelaxed != null || circumferences.rightBicepRelaxed != null) && (
@@ -272,6 +278,9 @@ export default function ViewMeasurement() {
                   rightLabel={t("measurements.right")}
                   leftValue={`${fmt(circumferences.leftBicepRelaxed)} cm`}
                   rightValue={`${fmt(circumferences.rightBicepRelaxed)} cm`}
+                  leftField="leftBicepRelaxed"
+                  rightField="rightBicepRelaxed"
+                  delta={delta}
                 />
               )}
               {(circumferences.leftBicepFlexed != null || circumferences.rightBicepFlexed != null) && (
@@ -281,6 +290,9 @@ export default function ViewMeasurement() {
                   rightLabel={t("measurements.right")}
                   leftValue={`${fmt(circumferences.leftBicepFlexed)} cm`}
                   rightValue={`${fmt(circumferences.rightBicepFlexed)} cm`}
+                  leftField="leftBicepFlexed"
+                  rightField="rightBicepFlexed"
+                  delta={delta}
                 />
               )}
             </YStack>
@@ -361,12 +373,18 @@ function DataRowPair({
   rightLabel,
   leftValue,
   rightValue,
+  leftField,
+  rightField,
+  delta,
 }: {
   label: string;
   leftLabel: string;
   rightLabel: string;
   leftValue: string;
   rightValue: string;
+  leftField?: string;
+  rightField?: string;
+  delta?: Delta;
 }) {
   return (
     <YStack gap={4}>
@@ -375,10 +393,12 @@ function DataRowPair({
         <XStack gap={4} alignItems="center">
           <Text fontSize="$2" color="#9CA3AF">{leftLabel}</Text>
           <Text fontSize="$3" fontWeight="600" color="#111827">{leftValue}</Text>
+          {leftField && delta ? <DeltaArrow field={leftField} delta={delta} /> : null}
         </XStack>
         <XStack gap={4} alignItems="center">
           <Text fontSize="$2" color="#9CA3AF">{rightLabel}</Text>
           <Text fontSize="$3" fontWeight="600" color="#111827">{rightValue}</Text>
+          {rightField && delta ? <DeltaArrow field={rightField} delta={delta} /> : null}
         </XStack>
       </XStack>
     </YStack>

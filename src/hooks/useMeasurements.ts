@@ -1,6 +1,109 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "../services/api";
 
+export interface MeasurementDetail {
+  id: string;
+  userId: string;
+  measurementDate: string;
+  weight: number;
+  calculated: {
+    bodyFatPercentage: number | null;
+    navyBodyFatPercentage: number | null;
+    leanMass: number | null;
+    fatMass: number | null;
+    bodyFatMethod: string | null;
+  };
+  skinfolds: {
+    triceps: number | null;
+    subscapular: number | null;
+    chest: number | null;
+    midaxillary: number | null;
+    suprailiac: number | null;
+    abdominal: number | null;
+    thigh: number | null;
+  } | null;
+  circumferences: {
+    neck: number | null;
+    shoulders: number | null;
+    chestCirc: number | null;
+    waist: number | null;
+    hip: number | null;
+    leftThigh: number | null;
+    rightThigh: number | null;
+    leftCalf: number | null;
+    rightCalf: number | null;
+    leftBicepRelaxed: number | null;
+    rightBicepRelaxed: number | null;
+    leftBicepFlexed: number | null;
+    rightBicepFlexed: number | null;
+  } | null;
+}
+
+export type DeltaDirection = "up" | "down" | "stable" | null;
+
+export interface MeasurementDelta {
+  measurementId: string;
+  previousMeasurementId: string | null;
+  delta: {
+    weight: DeltaDirection;
+    bodyFatPercentage: DeltaDirection;
+    leanMass: DeltaDirection;
+    fatMass: DeltaDirection;
+    triceps: DeltaDirection;
+    subscapular: DeltaDirection;
+    chest: DeltaDirection;
+    midaxillary: DeltaDirection;
+    suprailiac: DeltaDirection;
+    abdominal: DeltaDirection;
+    thigh: DeltaDirection;
+    skinfoldSum: DeltaDirection;
+    neck: DeltaDirection;
+    waist: DeltaDirection;
+    hip: DeltaDirection;
+    shoulders: DeltaDirection;
+    chestCirc: DeltaDirection;
+    leftThigh: DeltaDirection;
+    rightThigh: DeltaDirection;
+    leftCalf: DeltaDirection;
+    rightCalf: DeltaDirection;
+    leftBicepRelaxed: DeltaDirection;
+    rightBicepRelaxed: DeltaDirection;
+    leftBicepFlexed: DeltaDirection;
+    rightBicepFlexed: DeltaDirection;
+  } | null;
+}
+
+// Fields where "down" is good (lower = better)
+const LOWER_IS_BETTER = new Set([
+  "weight",
+  "bodyFatPercentage",
+  "navyBodyFatPercentage",
+  "fatMass",
+  "skinfoldSum",
+  "triceps",
+  "subscapular",
+  "chest",
+  "midaxillary",
+  "suprailiac",
+  "abdominal",
+  "thigh",
+  "waist",
+  "hip",
+]);
+
+export function getDeltaIndicator(
+  field: string,
+  direction: DeltaDirection,
+): { arrow: string; color: string } | null {
+  if (!direction || direction === "stable") return null;
+  const lowerIsBetter = LOWER_IS_BETTER.has(field);
+  const isGood = lowerIsBetter ? direction === "down" : direction === "up";
+  return {
+    arrow: direction === "up" ? "↑" : "↓",
+    color: isGood ? "#059669" : "#EF4444",
+  };
+}
+
 export interface Measurement {
   id: string;
   userId: string;
@@ -75,5 +178,27 @@ export function useDeleteMeasurement() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["measurements"] });
     },
+  });
+}
+
+export function useMeasurement(id: string | undefined) {
+  return useQuery({
+    queryKey: ["measurements", id],
+    queryFn: async () => {
+      const { data } = await api.get<MeasurementDetail>(`/measurements/${id}`);
+      return data;
+    },
+    enabled: !!id,
+  });
+}
+
+export function useMeasurementDelta(id: string | undefined) {
+  return useQuery({
+    queryKey: ["evolution", "delta", id],
+    queryFn: async () => {
+      const { data } = await api.get<MeasurementDelta>(`/evolution/delta/${id}`);
+      return data;
+    },
+    enabled: !!id,
   });
 }
