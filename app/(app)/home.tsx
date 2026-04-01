@@ -91,6 +91,8 @@ export default function Home() {
           p={20}
           borderWidth={1}
           borderColor="#E5E7EB"
+          pressStyle={{ bg: "#F9FAFB" }}
+          onPress={() => router.push("/(app)/profile" as any)}
         >
           <XStack items="center" gap={16}>
             {/* Avatar */}
