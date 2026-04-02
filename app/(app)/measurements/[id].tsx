@@ -144,6 +144,15 @@ export default function ViewMeasurement() {
                 field="bodyFatPercentage"
                 delta={delta}
               />
+              {calculated.leanMassPercentage != null && (
+                <DataRow
+                  label={t("measurements.leanMassPercentage")}
+                  value={`${fmt(calculated.leanMassPercentage)} %`}
+                  icon={<Dumbbell size={14} color="#8B5CF6" />}
+                  field="leanMass"
+                  delta={delta}
+                />
+              )}
               {calculated.leanMass != null && (
                 <DataRow
                   label={t("measurements.leanMass")}

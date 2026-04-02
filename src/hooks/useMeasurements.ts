@@ -1,26 +1,31 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "../services/api";
 
-export interface MeasurementDetail {
+// Shape real retornada pela API (MeasurementResponse do backend)
+export interface Measurement {
   id: string;
   userId: string;
   measurementDate: string;
   weight: number;
   calculated: {
     bodyFatPercentage: number | null;
-    navyBodyFatPercentage: number | null;
+    bodyFatMethod: "pollock" | "navy" | null;
     leanMass: number | null;
     fatMass: number | null;
-    bodyFatMethod: string | null;
+    leanMassPercentage: number | null;
+    waistHipRatio: {
+      value: number;
+      risk: "low" | "moderate" | "high" | null;
+    } | null;
   };
   skinfolds: {
-    triceps: number | null;
-    subscapular: number | null;
-    chest: number | null;
-    midaxillary: number | null;
-    suprailiac: number | null;
-    abdominal: number | null;
-    thigh: number | null;
+    triceps: number;
+    subscapular: number;
+    chest: number;
+    midaxillary: number;
+    suprailiac: number;
+    abdominal: number;
+    thigh: number;
   } | null;
   circumferences: {
     neck: number | null;
@@ -37,7 +42,12 @@ export interface MeasurementDetail {
     leftBicepFlexed: number | null;
     rightBicepFlexed: number | null;
   } | null;
+  createdAt: string;
+  updatedAt: string | null;
 }
+
+// Alias para uso no detalhe (mesma shape)
+export type MeasurementDetail = Measurement;
 
 export type DeltaDirection = "up" | "down" | "stable" | null;
 
@@ -139,6 +149,16 @@ export interface CreateMeasurementData {
   neck?: number;
   waist?: number;
   hip?: number;
+  shoulders?: number;
+  chestCirc?: number;
+  leftThigh?: number;
+  rightThigh?: number;
+  leftCalf?: number;
+  rightCalf?: number;
+  leftBicepRelaxed?: number;
+  rightBicepRelaxed?: number;
+  leftBicepFlexed?: number;
+  rightBicepFlexed?: number;
 }
 
 export function useMeasurements() {
@@ -156,10 +176,7 @@ export function useCreateMeasurement() {
 
   return useMutation({
     mutationFn: async (data: CreateMeasurementData) => {
-      const { data: response } = await api.post<Measurement>(
-        "/measurements",
-        data,
-      );
+      const { data: response } = await api.post<Measurement>("/measurements", data);
       return response;
     },
     onSuccess: () => {
