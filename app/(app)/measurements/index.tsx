@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { FlatList, RefreshControl, Alert } from "react-native";
+import { FlatList, RefreshControl, Alert, TouchableOpacity } from "react-native";
 import { YStack, XStack, Text, Button, Spinner, Card, Separator, Popover } from "tamagui";
 import { router } from "expo-router";
 import { Plus, Trash2, Scale, Droplets, Dumbbell, Flame, ChevronRight, ChevronLeft, Info } from "@tamagui/lucide-icons";
@@ -18,6 +18,7 @@ export default function MeasurementsList() {
   const deleteMutation = useDeleteMeasurement();
   const sex = profile?.sex ?? null;
   const [refreshing, setRefreshing] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   async function onRefresh() {
     setRefreshing(true);
@@ -31,7 +32,12 @@ export default function MeasurementsList() {
       {
         text: t("measurements.delete"),
         style: "destructive",
-        onPress: () => deleteMutation.mutate(id),
+        onPress: () => {
+          setDeletingId(id);
+          deleteMutation.mutate(id, {
+            onSettled: () => setDeletingId(null),
+          });
+        },
       },
     ]);
   }
@@ -118,6 +124,7 @@ export default function MeasurementsList() {
             item={item}
             t={t}
             sex={sex}
+            deleting={deletingId === item.id}
             onView={() =>
               router.push({
                 pathname: "/(app)/measurements/[id]",
@@ -136,12 +143,14 @@ function MeasurementCard({
   item,
   t,
   sex,
+  deleting,
   onView,
   onDelete,
 }: {
   item: Measurement;
   t: (key: string) => string;
   sex: "male" | "female" | null;
+  deleting: boolean;
   onView: () => void;
   onDelete: () => void;
 }) {
@@ -163,8 +172,9 @@ function MeasurementCard({
       rounded={14}
       borderWidth={1}
       borderColor="#E5E7EB"
-      pressStyle={{ bg: "#F9FAFB" }}
-      onPress={onView}
+      pressStyle={deleting ? {} : { bg: "#F9FAFB" }}
+      onPress={deleting ? undefined : onView}
+      opacity={deleting ? 0.5 : 1}
     >
       {/* Top row: date + actions */}
       <XStack justify="space-between" items="center" px={16} pt={14} pb={10}>
@@ -182,15 +192,13 @@ function MeasurementCard({
         </XStack>
 
         <XStack items="center" gap={2}>
-          <Button
-            size="$2"
-            bg="transparent"
-            pressStyle={{ bg: "#FEE2E2" }}
-            circular
-            onPress={(e) => { e.stopPropagation?.(); onDelete(); }}
-          >
-            <Trash2 size={16} color="#DC2626" />
-          </Button>
+          {deleting ? (
+            <Spinner size="small" color="#DC2626" />
+          ) : (
+            <TouchableOpacity onPress={onDelete} style={{ padding: 8, borderRadius: 20 }}>
+              <Trash2 size={16} color="#DC2626" />
+            </TouchableOpacity>
+          )}
           <ChevronRight size={18} color="#9CA3AF" />
         </XStack>
       </XStack>
