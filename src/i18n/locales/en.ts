@@ -170,6 +170,8 @@ export default {
     whrModerate: "Moderate risk",
     whrHigh: "High risk",
     leanMassPercentage: "Lean mass %",
+    compositionBalance: "Composition balance",
+    weightDeltaInfo: "The weight progress indicator does not only evaluate whether weight went up or down — it considers the body composition balance. A weight drop accompanied by lean mass gain is considered good; a drop with lean mass loss is considered bad.",
     save: "Save measurement",
     saving: "Saving...",
     success: "Measurement saved successfully!",

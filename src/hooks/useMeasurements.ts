@@ -80,6 +80,7 @@ export interface MeasurementDelta {
     rightBicepRelaxed: DeltaDirection;
     leftBicepFlexed: DeltaDirection;
     rightBicepFlexed: DeltaDirection;
+    compositionBalance: DeltaDirection;
   } | null;
 }
 

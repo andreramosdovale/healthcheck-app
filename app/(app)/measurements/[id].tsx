@@ -1,5 +1,5 @@
 import { ScrollView } from "react-native";
-import { YStack, XStack, Text, Button, Spinner, Card, Separator } from "tamagui";
+import { YStack, XStack, Text, Button, Spinner, Card, Separator, Popover } from "tamagui";
 import { router, useLocalSearchParams } from "expo-router";
 import {
   ChevronLeft,
@@ -10,6 +10,7 @@ import {
   Calendar,
   Ruler,
   Activity,
+  Info,
 } from "@tamagui/lucide-icons";
 import { useTranslation } from "react-i18next";
 import {
@@ -17,6 +18,7 @@ import {
   useMeasurementDelta,
   getDeltaIndicator,
   type MeasurementDelta,
+  type DeltaDirection,
 } from "../../../src/hooks/useMeasurements";
 
 type Delta = MeasurementDelta["delta"];
@@ -46,7 +48,7 @@ export default function ViewMeasurement() {
 
   if (isLoading) {
     return (
-      <YStack flex={1} justifyContent="center" alignItems="center" backgroundColor="#F9FAFB">
+      <YStack flex={1} justify="center" items="center" style={{ backgroundColor: "#F9FAFB" }}>
         <Spinner size="large" color="#059669" />
       </YStack>
     );
@@ -54,7 +56,7 @@ export default function ViewMeasurement() {
 
   if (!measurement) {
     return (
-      <YStack flex={1} justifyContent="center" alignItems="center" backgroundColor="#F9FAFB">
+      <YStack flex={1} justify="center" items="center" style={{ backgroundColor: "#F9FAFB" }}>
         <Text color="#6B7280">{t("measurements.notFound")}</Text>
       </YStack>
     );
@@ -63,13 +65,13 @@ export default function ViewMeasurement() {
   const { calculated, skinfolds, circumferences } = measurement;
 
   return (
-    <YStack flex={1} backgroundColor="#F9FAFB">
+    <YStack flex={1} style={{ backgroundColor: "#F9FAFB" }}>
       {/* Header */}
       <XStack
-        alignItems="center"
-        padding={16}
-        paddingTop={60}
-        backgroundColor="white"
+        items="center"
+        p={16}
+        pt={60}
+        style={{ backgroundColor: "white" }}
         borderBottomWidth={1}
         borderBottomColor="#E5E7EB"
         gap={12}
@@ -84,8 +86,8 @@ export default function ViewMeasurement() {
 
       <ScrollView contentContainerStyle={{ padding: 16, gap: 12 }}>
         {/* Date */}
-        <Card backgroundColor="white" borderRadius={12} padding={16} borderWidth={1} borderColor="#E5E7EB">
-          <XStack alignItems="center" gap={10}>
+        <Card style={{ backgroundColor: "white" }} rounded={12} p={16} borderWidth={1} borderColor="#E5E7EB">
+          <XStack items="center" gap={10}>
             <IconBadge color="#ECFDF5">
               <Calendar size={20} color="#059669" />
             </IconBadge>
@@ -99,19 +101,47 @@ export default function ViewMeasurement() {
         </Card>
 
         {/* Weight */}
-        <Card backgroundColor="white" borderRadius={12} padding={16} borderWidth={1} borderColor="#E5E7EB">
-          <XStack alignItems="center" gap={10}>
+        <Card style={{ backgroundColor: "white" }} rounded={12} p={16} borderWidth={1} borderColor="#E5E7EB">
+          <XStack items="center" gap={10}>
             <IconBadge color="#ECFDF5">
               <Scale size={20} color="#059669" />
             </IconBadge>
             <YStack flex={1}>
-              <Text fontSize="$2" color="#6B7280">{t("measurements.weight")}</Text>
-              <XStack alignItems="baseline" gap={6}>
+              <XStack items="center" gap={4}>
+                <Text fontSize="$2" color="#6B7280">{t("measurements.weight")}</Text>
+                <Popover size="$5" allowFlip placement="top">
+                  <Popover.Trigger asChild>
+                    <Button size="$1" chromeless circular p={0}>
+                      <Info size={12} color="#9CA3AF" />
+                    </Button>
+                  </Popover.Trigger>
+                  <Popover.Content
+                    bg="white"
+                    borderWidth={1}
+                    borderColor="#E5E7EB"
+                    rounded={12}
+                    p={14}
+                    style={{ maxWidth: 260 }}
+                    elevate
+                  >
+                    <Popover.Arrow bg="white" borderColor="#E5E7EB" borderWidth={1} />
+                    <YStack gap={6}>
+                      <Text fontSize="$3" fontWeight="bold" color="#111827">
+                        {t("measurements.weight")}
+                      </Text>
+                      <Text fontSize="$2" color="#6B7280">
+                        {t("measurements.weightDeltaInfo")}
+                      </Text>
+                    </YStack>
+                  </Popover.Content>
+                </Popover>
+              </XStack>
+              <XStack items="center" gap={6}>
                 <Text fontSize="$8" fontWeight="bold" color="#111827">
                   {measurement.weight.toFixed(1)}
                 </Text>
                 <Text fontSize="$4" color="#6B7280">{t("measurements.kg")}</Text>
-                <DeltaArrow field="weight" delta={delta} />
+                <DeltaArrow field="weight" delta={delta} colorOverride={delta?.compositionBalance} />
               </XStack>
             </YStack>
           </XStack>
@@ -119,8 +149,8 @@ export default function ViewMeasurement() {
 
         {/* Calculated */}
         {calculated.bodyFatPercentage != null && (
-          <Card backgroundColor="white" borderRadius={12} padding={16} borderWidth={1} borderColor="#E5E7EB">
-            <XStack alignItems="center" gap={8} marginBottom={12}>
+          <Card style={{ backgroundColor: "white" }} rounded={12} p={16} borderWidth={1} borderColor="#E5E7EB">
+            <XStack items="center" gap={8} mb={12}>
               <IconBadge color="#EFF6FF">
                 <Activity size={20} color="#3B82F6" />
               </IconBadge>
@@ -135,7 +165,7 @@ export default function ViewMeasurement() {
                 )}
               </YStack>
             </XStack>
-            <Separator marginBottom={12} />
+            <Separator style={{ marginBottom: 12 }} />
             <YStack gap={10}>
               <DataRow
                 label={t("measurements.bodyFat")}
@@ -149,7 +179,7 @@ export default function ViewMeasurement() {
                   label={t("measurements.leanMassPercentage")}
                   value={`${fmt(calculated.leanMassPercentage)} %`}
                   icon={<Dumbbell size={14} color="#8B5CF6" />}
-                  field="leanMass"
+                  field="leanMassPercentage"
                   delta={delta}
                 />
               )}
@@ -177,8 +207,8 @@ export default function ViewMeasurement() {
 
         {/* Skinfolds */}
         {skinfolds && (
-          <Card backgroundColor="white" borderRadius={12} padding={16} borderWidth={1} borderColor="#E5E7EB">
-            <XStack alignItems="center" gap={8} marginBottom={12}>
+          <Card style={{ backgroundColor: "white" }} rounded={12} p={16} borderWidth={1} borderColor="#E5E7EB">
+            <XStack items="center" gap={8} mb={12}>
               <IconBadge color="#FFF7ED">
                 <Droplets size={20} color="#F97316" />
               </IconBadge>
@@ -187,10 +217,9 @@ export default function ViewMeasurement() {
                   {t("measurements.skinfolds")}
                 </Text>
               </YStack>
-              {/* skinfoldSum indicator on the section header */}
               <DeltaArrow field="skinfoldSum" delta={delta} size="$4" />
             </XStack>
-            <Separator marginBottom={12} />
+            <Separator style={{ marginBottom: 12 }} />
             <YStack gap={10}>
               <DataRow label={t("measurements.skinfold_triceps")} value={`${fmt(skinfolds.triceps)} mm`} field="triceps" delta={delta} />
               <DataRow label={t("measurements.skinfold_subscapular")} value={`${fmt(skinfolds.subscapular)} mm`} field="subscapular" delta={delta} />
@@ -205,8 +234,8 @@ export default function ViewMeasurement() {
 
         {/* Circumferences */}
         {circumferences && (
-          <Card backgroundColor="white" borderRadius={12} padding={16} borderWidth={1} borderColor="#E5E7EB">
-            <XStack alignItems="center" gap={8} marginBottom={12}>
+          <Card style={{ backgroundColor: "white" }} rounded={12} p={16} borderWidth={1} borderColor="#E5E7EB">
+            <XStack items="center" gap={8} mb={12}>
               <IconBadge color="#F5F3FF">
                 <Ruler size={20} color="#8B5CF6" />
               </IconBadge>
@@ -214,7 +243,7 @@ export default function ViewMeasurement() {
                 {t("measurements.circumferences")}
               </Text>
             </XStack>
-            <Separator marginBottom={12} />
+            <Separator style={{ marginBottom: 12 }} />
             <YStack gap={10}>
               {circumferences.neck != null && (
                 <DataRow
@@ -318,17 +347,25 @@ function DeltaArrow({
   field,
   delta,
   size = "$3",
+  colorOverride,
 }: {
   field: string;
   delta: Delta;
   size?: string;
+  colorOverride?: DeltaDirection;
 }) {
   if (!delta) return null;
   const direction = (delta as Record<string, any>)[field] ?? null;
   const indicator = getDeltaIndicator(field, direction);
   if (!indicator) return null;
+  const color =
+    colorOverride === "up"
+      ? "#059669"
+      : colorOverride === "down"
+        ? "#EF4444"
+        : indicator.color;
   return (
-    <Text fontSize={size as any} fontWeight="bold" style={{ color: indicator.color }}>
+    <Text fontSize={size as any} fontWeight="bold" style={{ color }}>
       {indicator.arrow}
     </Text>
   );
@@ -339,10 +376,10 @@ function IconBadge({ color, children }: { color: string; children: React.ReactNo
     <YStack
       width={40}
       height={40}
-      borderRadius={20}
-      backgroundColor={color}
-      justifyContent="center"
-      alignItems="center"
+      rounded={20}
+      justify="center"
+      items="center"
+      style={{ backgroundColor: color }}
     >
       {children}
     </YStack>
@@ -363,12 +400,12 @@ function DataRow({
   delta?: Delta;
 }) {
   return (
-    <XStack justifyContent="space-between" alignItems="center">
-      <XStack alignItems="center" gap={6}>
+    <XStack justify="space-between" items="center">
+      <XStack items="center" gap={6}>
         {icon}
         <Text fontSize="$3" color="#6B7280">{label}</Text>
       </XStack>
-      <XStack alignItems="center" gap={6}>
+      <XStack items="center" gap={6}>
         <Text fontSize="$3" fontWeight="600" color="#111827">{value}</Text>
         {field && delta ? <DeltaArrow field={field} delta={delta} /> : null}
       </XStack>
@@ -398,13 +435,13 @@ function DataRowPair({
   return (
     <YStack gap={4}>
       <Text fontSize="$3" color="#6B7280">{label}</Text>
-      <XStack justifyContent="space-between">
-        <XStack gap={4} alignItems="center">
+      <XStack justify="space-between">
+        <XStack gap={4} items="center">
           <Text fontSize="$2" color="#9CA3AF">{leftLabel}</Text>
           <Text fontSize="$3" fontWeight="600" color="#111827">{leftValue}</Text>
           {leftField && delta ? <DeltaArrow field={leftField} delta={delta} /> : null}
         </XStack>
-        <XStack gap={4} alignItems="center">
+        <XStack gap={4} items="center">
           <Text fontSize="$2" color="#9CA3AF">{rightLabel}</Text>
           <Text fontSize="$3" fontWeight="600" color="#111827">{rightValue}</Text>
           {rightField && delta ? <DeltaArrow field={rightField} delta={delta} /> : null}

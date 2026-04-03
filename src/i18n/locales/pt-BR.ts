@@ -171,6 +171,8 @@ export default {
     whrModerate: "Risco moderado",
     whrHigh: "Alto risco",
     leanMassPercentage: "% Massa magra",
+    compositionBalance: "Balanço de composição",
+    weightDeltaInfo: "O indicador de melhora do peso não avalia somente se ele subiu ou desceu — ele considera o balanço da composição corporal. Uma queda de peso acompanhada de ganho de massa magra é considerada boa; uma queda com perda de massa magra é considerada ruim.",
     save: "Salvar medição",
     saving: "Salvando...",
     success: "Medição salva com sucesso!",
