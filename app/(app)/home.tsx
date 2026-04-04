@@ -1,6 +1,8 @@
 import { ScrollView, Alert } from "react-native";
 import { YStack, XStack, Text, Button, Card, Spinner } from "tamagui";
 import { router } from "expo-router";
+import { useRef, useCallback } from "react";
+import { useFocusEffect } from "expo-router";
 import {
   Scale,
   ClipboardList,
@@ -22,6 +24,19 @@ export default function Home() {
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
   const { data: latest, isLoading: loadingLatest } = useEvolutionLatest();
+  const navigating = useRef(false);
+
+  useFocusEffect(
+    useCallback(() => {
+      return () => { navigating.current = false; };
+    }, [])
+  );
+
+  function navigate(fn: () => void) {
+    if (navigating.current) return;
+    navigating.current = true;
+    fn();
+  }
 
   const initials = user?.name
     ? user.name
@@ -46,12 +61,21 @@ export default function Home() {
     ]);
   }
 
-  function formatDate(dateString: string) {
-    return new Date(dateString).toLocaleDateString("pt-BR", {
+  function formatDate(dateString: string | null | undefined) {
+    if (!dateString) return "—";
+    const d = new Date(dateString);
+    if (isNaN(d.getTime())) return "—";
+    return d.toLocaleDateString("pt-BR", {
       day: "2-digit",
       month: "short",
       year: "numeric",
     });
+  }
+
+  function safeFloat(value: string | number | null | undefined) {
+    if (value == null) return null;
+    const n = parseFloat(String(value));
+    return isNaN(n) ? null : n;
   }
 
   const TrendIcon =
@@ -92,7 +116,7 @@ export default function Home() {
           borderWidth={1}
           borderColor="#E5E7EB"
           pressStyle={{ bg: "#F9FAFB" }}
-          onPress={() => router.push("/(app)/profile" as any)}
+          onPress={() => navigate(() => router.push("/(app)/profile" as any))}
         >
           <XStack items="center" gap={16}>
             {/* Avatar */}
@@ -163,10 +187,12 @@ export default function Home() {
               borderColor="#E5E7EB"
               pressStyle={{ bg: "#F9FAFB" }}
               onPress={() =>
-                router.push({
-                  pathname: "/(app)/measurements/[id]",
-                  params: { id: latest.current.id },
-                })
+                navigate(() =>
+                  router.push({
+                    pathname: "/(app)/measurements/[id]",
+                    params: { id: latest.current.id },
+                  })
+                )
               }
             >
               <YStack gap={12}>
@@ -184,37 +210,42 @@ export default function Home() {
                   )}
                 </XStack>
 
-                <XStack gap={20} flexWrap="wrap">
-                  <XStack items="center" gap={6}>
-                    <Scale size={18} color="#059669" />
-                    <Text fontSize="$6" fontWeight="bold" color="#111827">
-                      {parseFloat(String(latest.current.weight)).toFixed(1)}
-                    </Text>
-                    <Text fontSize="$2" color="#6B7280">kg</Text>
-                  </XStack>
+                {(() => {
+                  const weight = safeFloat(latest.current.weight);
+                  const bodyFat = safeFloat(latest.current.bodyFatPercentage ?? latest.current.navyBodyFatPercentage);
+                  const leanMass = safeFloat(latest.current.leanMass);
+                  return (
+                    <XStack gap={20} flexWrap="wrap">
+                      <XStack items="center" gap={6}>
+                        <Scale size={18} color="#059669" />
+                        <Text fontSize="$6" fontWeight="bold" color="#111827">
+                          {weight != null ? weight.toFixed(1) : "—"}
+                        </Text>
+                        <Text fontSize="$2" color="#6B7280">kg</Text>
+                      </XStack>
 
-                  {(latest.current.bodyFatPercentage ?? latest.current.navyBodyFatPercentage) != null && (
-                    <XStack items="center" gap={6}>
-                      <Droplets size={18} color="#3B82F6" />
-                      <Text fontSize="$6" fontWeight="bold" color="#111827">
-                        {parseFloat(
-                          (latest.current.bodyFatPercentage ?? latest.current.navyBodyFatPercentage)!
-                        ).toFixed(1)}
-                      </Text>
-                      <Text fontSize="$2" color="#6B7280">%</Text>
-                    </XStack>
-                  )}
+                      {bodyFat != null && (
+                        <XStack items="center" gap={6}>
+                          <Droplets size={18} color="#3B82F6" />
+                          <Text fontSize="$6" fontWeight="bold" color="#111827">
+                            {bodyFat.toFixed(1)}
+                          </Text>
+                          <Text fontSize="$2" color="#6B7280">%</Text>
+                        </XStack>
+                      )}
 
-                  {latest.current.leanMass != null && (
-                    <XStack items="center" gap={6}>
-                      <Dumbbell size={18} color="#8B5CF6" />
-                      <Text fontSize="$6" fontWeight="bold" color="#111827">
-                        {parseFloat(latest.current.leanMass).toFixed(1)}
-                      </Text>
-                      <Text fontSize="$2" color="#6B7280">kg</Text>
+                      {leanMass != null && (
+                        <XStack items="center" gap={6}>
+                          <Dumbbell size={18} color="#8B5CF6" />
+                          <Text fontSize="$6" fontWeight="bold" color="#111827">
+                            {leanMass.toFixed(1)}
+                          </Text>
+                          <Text fontSize="$2" color="#6B7280">kg</Text>
+                        </XStack>
+                      )}
                     </XStack>
-                  )}
-                </XStack>
+                  );
+                })()}
               </YStack>
             </Card>
           ) : (
@@ -245,7 +276,7 @@ export default function Home() {
               borderWidth={1}
               borderColor="#E5E7EB"
               pressStyle={{ bg: "#F9FAFB" }}
-              onPress={() => router.push("/(app)/measurements")}
+              onPress={() => navigate(() => router.push("/(app)/measurements"))}
             >
               <YStack items="center" gap={10}>
                 <YStack
@@ -271,7 +302,7 @@ export default function Home() {
               rounded={16}
               p={20}
               pressStyle={{ bg: "#047857" }}
-              onPress={() => router.push("/(app)/measurements/new")}
+              onPress={() => navigate(() => router.push("/(app)/measurements/new"))}
             >
               <YStack items="center" gap={10}>
                 <YStack

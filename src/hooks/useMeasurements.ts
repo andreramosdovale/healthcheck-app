@@ -182,6 +182,7 @@ export function useCreateMeasurement() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["measurements"] });
+      queryClient.invalidateQueries({ queryKey: ["evolution"] });
     },
   });
 }
@@ -195,6 +196,7 @@ export function useDeleteMeasurement() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["measurements"] });
+      queryClient.invalidateQueries({ queryKey: ["evolution"] });
     },
   });
 }
