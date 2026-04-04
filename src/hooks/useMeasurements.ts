@@ -115,26 +115,29 @@ export function getDeltaIndicator(
   };
 }
 
-export interface Measurement {
-  id: string;
-  userId: string;
-  measurementDate: string;
-  weight: string;
-  triceps: string | null;
-  subscapular: string | null;
-  chest: string | null;
-  midaxillary: string | null;
-  suprailiac: string | null;
-  abdominal: string | null;
-  thigh: string | null;
-  neck: string | null;
-  waist: string | null;
-  hip: string | null;
-  bodyFatPercentage: string | null;
-  navyBodyFatPercentage: string | null;
-  leanMass: string | null;
-  fatMass: string | null;
-  createdAt: string;
+export interface UpdateMeasurementData {
+  measurementDate?: string;
+  weight?: number;
+  triceps?: number | null;
+  subscapular?: number | null;
+  chest?: number | null;
+  midaxillary?: number | null;
+  suprailiac?: number | null;
+  abdominal?: number | null;
+  thigh?: number | null;
+  neck?: number | null;
+  waist?: number | null;
+  hip?: number | null;
+  shoulders?: number | null;
+  chestCirc?: number | null;
+  leftThigh?: number | null;
+  rightThigh?: number | null;
+  leftCalf?: number | null;
+  rightCalf?: number | null;
+  leftBicepRelaxed?: number | null;
+  rightBicepRelaxed?: number | null;
+  leftBicepFlexed?: number | null;
+  rightBicepFlexed?: number | null;
 }
 
 export interface CreateMeasurementData {
@@ -209,6 +212,22 @@ export function useMeasurement(id: string | undefined) {
       return data;
     },
     enabled: !!id,
+  });
+}
+
+export function useUpdateMeasurement(id: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (data: UpdateMeasurementData) => {
+      const { data: response } = await api.patch<MeasurementDetail>(`/measurements/${id}`, data);
+      return response;
+    },
+    onSuccess: (updated) => {
+      queryClient.setQueryData(["measurements", id], updated);
+      queryClient.invalidateQueries({ queryKey: ["measurements"] });
+      queryClient.invalidateQueries({ queryKey: ["evolution"] });
+    },
   });
 }
 

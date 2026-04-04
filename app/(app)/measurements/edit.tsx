@@ -1,11 +1,19 @@
 import { useState } from "react";
-import { KeyboardAvoidingView, Platform, ScrollView, Alert } from "react-native";
+import {
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  Alert,
+} from "react-native";
 import { YStack, XStack, Text, Input, Button, Spinner } from "tamagui";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { ArrowLeft, Calendar, Scale, Ruler, Info } from "@tamagui/lucide-icons";
 import MaskInput from "react-native-mask-input";
 import { useTranslation } from "react-i18next";
-import { useCreateMeasurement } from "../../../src/hooks/useMeasurements";
+import {
+  useMeasurement,
+  useUpdateMeasurement,
+} from "../../../src/hooks/useMeasurements";
 
 const CIRC_RANGES: Record<string, { min: number; max: number }> = {
   neck:               { min: 25,  max: 70  },
@@ -23,45 +31,81 @@ const CIRC_RANGES: Record<string, { min: number; max: number }> = {
   rightBicepFlexed:   { min: 15,  max: 70  },
 };
 
-export default function NewMeasurement() {
-  const { t } = useTranslation();
-  const createMutation = useCreateMeasurement();
+export default function EditMeasurement() {
+  const { id } = useLocalSearchParams<{ id: string }>();
+  const { data: measurement, isLoading } = useMeasurement(id);
 
-  const today = new Date().toISOString().split("T")[0];
-  const todayFormatted = new Date().toLocaleDateString("pt-BR");
+  if (isLoading || !measurement) {
+    return (
+      <YStack flex={1} justify="center" items="center" style={{ backgroundColor: "#F9FAFB" }}>
+        <Spinner size="large" color="#059669" />
+      </YStack>
+    );
+  }
+
+  return <EditForm measurement={measurement} id={id!} />;
+}
+
+function EditForm({
+  measurement,
+  id,
+}: {
+  measurement: ReturnType<typeof useMeasurement>["data"] & {};
+  id: string;
+}) {
+  const { t } = useTranslation();
+  const updateMutation = useUpdateMeasurement(id);
+
+  // Convert YYYY-MM-DD → DD/MM/YYYY for display
+  const isoDate = measurement.measurementDate;
+  const [year, month, day] = isoDate.split("-");
+  const initialDisplay = `${day}/${month}/${year}`;
+
+  const n = (v: number | null | undefined) => (v != null ? String(v) : "");
 
   const [form, setForm] = useState({
-    measurementDate: today,
-    measurementDateDisplay: todayFormatted,
-    weight: "",
-    triceps: "", subscapular: "", chest: "", midaxillary: "",
-    suprailiac: "", abdominal: "", thigh: "",
-    neck: "", waist: "", hip: "", shoulders: "", chestCirc: "",
-    leftThigh: "", rightThigh: "", leftCalf: "", rightCalf: "",
-    leftBicepRelaxed: "", rightBicepRelaxed: "",
-    leftBicepFlexed: "", rightBicepFlexed: "",
+    measurementDate: isoDate,
+    measurementDateDisplay: initialDisplay,
+    weight: String(measurement.weight),
+    // Skinfolds
+    triceps: n(measurement.skinfolds?.triceps),
+    subscapular: n(measurement.skinfolds?.subscapular),
+    chest: n(measurement.skinfolds?.chest),
+    midaxillary: n(measurement.skinfolds?.midaxillary),
+    suprailiac: n(measurement.skinfolds?.suprailiac),
+    abdominal: n(measurement.skinfolds?.abdominal),
+    thigh: n(measurement.skinfolds?.thigh),
+    // Circumferences
+    neck: n(measurement.circumferences?.neck),
+    waist: n(measurement.circumferences?.waist),
+    hip: n(measurement.circumferences?.hip),
+    shoulders: n(measurement.circumferences?.shoulders),
+    chestCirc: n(measurement.circumferences?.chestCirc),
+    leftThigh: n(measurement.circumferences?.leftThigh),
+    rightThigh: n(measurement.circumferences?.rightThigh),
+    leftCalf: n(measurement.circumferences?.leftCalf),
+    rightCalf: n(measurement.circumferences?.rightCalf),
+    leftBicepRelaxed: n(measurement.circumferences?.leftBicepRelaxed),
+    rightBicepRelaxed: n(measurement.circumferences?.rightBicepRelaxed),
+    leftBicepFlexed: n(measurement.circumferences?.leftBicepFlexed),
+    rightBicepFlexed: n(measurement.circumferences?.rightBicepFlexed),
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  function updateForm(field: string, value: string) {
+  function updateField(field: string, value: string) {
     setForm((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) setErrors((prev) => ({ ...prev, [field]: "" }));
   }
 
   function updateDate(masked: string) {
-    updateForm("measurementDateDisplay", masked);
+    updateField("measurementDateDisplay", masked);
     if (masked.length === 10) {
-      const [day, month, year] = masked.split("/");
-      if (day && month && year) updateForm("measurementDate", `${year}-${month}-${day}`);
+      const [d, m, y] = masked.split("/");
+      if (d && m && y) updateField("measurementDate", `${y}-${m}-${d}`);
     } else {
-      updateForm("measurementDate", "");
+      updateField("measurementDate", "");
     }
-  }
-
-  function setToday() {
-    updateForm("measurementDate", today);
-    updateForm("measurementDateDisplay", todayFormatted);
   }
 
   function validate(): boolean {
@@ -70,8 +114,8 @@ export default function NewMeasurement() {
     if (!form.weight) {
       newErrors.weight = t("validation.required");
     } else {
-      const weight = parseFloat(form.weight);
-      if (isNaN(weight) || weight < 20 || weight > 500) newErrors.weight = t("validation.weightRange");
+      const w = parseFloat(form.weight);
+      if (isNaN(w) || w < 20 || w > 500) newErrors.weight = t("validation.weightRange");
     }
 
     if (!form.measurementDateDisplay || form.measurementDateDisplay.length !== 10) {
@@ -80,14 +124,15 @@ export default function NewMeasurement() {
       newErrors.measurementDate = t("validation.invalidDate");
     } else {
       const parsed = new Date(form.measurementDate);
-      if (isNaN(parsed.getTime()) || parsed.toISOString().split("T")[0] !== form.measurementDate)
+      if (isNaN(parsed.getTime()) || parsed.toISOString().split("T")[0] !== form.measurementDate) {
         newErrors.measurementDate = t("validation.invalidDate");
+      }
     }
 
     const skinfoldFields = ["triceps", "subscapular", "chest", "midaxillary", "suprailiac", "abdominal", "thigh"] as const;
-    const filledSkinfolds = skinfoldFields.filter((f) => form[f] !== "");
-    if (filledSkinfolds.length > 0 && filledSkinfolds.length < 7)
-      newErrors.skinfolds = t("validation.allSkinfoldsRequired");
+    const filled = skinfoldFields.filter((f) => form[f] !== "");
+    if (filled.length > 0 && filled.length < 7) newErrors.skinfolds = t("validation.allSkinfoldsRequired");
+
     for (const field of skinfoldFields) {
       if (form[field] !== "") {
         const val = parseFloat(form[field]);
@@ -110,32 +155,38 @@ export default function NewMeasurement() {
   async function handleSubmit() {
     if (!validate()) return;
 
-    const data: Record<string, string | number> = {
+    const p = (v: string) => v !== "" ? parseFloat(v) : null;
+
+    const data: Record<string, any> = {
       measurementDate: form.measurementDate,
       weight: parseFloat(form.weight),
+      triceps: p(form.triceps),
+      subscapular: p(form.subscapular),
+      chest: p(form.chest),
+      midaxillary: p(form.midaxillary),
+      suprailiac: p(form.suprailiac),
+      abdominal: p(form.abdominal),
+      thigh: p(form.thigh),
+      neck: p(form.neck),
+      waist: p(form.waist),
+      hip: p(form.hip),
+      shoulders: p(form.shoulders),
+      chestCirc: p(form.chestCirc),
+      leftThigh: p(form.leftThigh),
+      rightThigh: p(form.rightThigh),
+      leftCalf: p(form.leftCalf),
+      rightCalf: p(form.rightCalf),
+      leftBicepRelaxed: p(form.leftBicepRelaxed),
+      rightBicepRelaxed: p(form.rightBicepRelaxed),
+      leftBicepFlexed: p(form.leftBicepFlexed),
+      rightBicepFlexed: p(form.rightBicepFlexed),
     };
 
-    const sf = ["triceps", "subscapular", "chest", "midaxillary", "suprailiac", "abdominal", "thigh"] as const;
-    for (const f of sf) { if (form[f]) data[f] = parseFloat(form[f]); }
-
-    const cf = ["neck", "waist", "hip", "shoulders", "chestCirc", "leftThigh", "rightThigh", "leftCalf", "rightCalf", "leftBicepRelaxed", "rightBicepRelaxed", "leftBicepFlexed", "rightBicepFlexed"] as const;
-    for (const f of cf) { if (form[f]) data[f] = parseFloat(form[f]); }
-
     try {
-      const result = await createMutation.mutateAsync(data as any);
-      const calc = (result as any)?.calculated;
-
-      let message = t("measurements.success");
-      if (calc?.bodyFatPercentage != null) {
-        const method = calc.bodyFatMethod === "pollock" ? t("measurements.method_pollock") : t("measurements.method_navy");
-        message += `\n\n${t("measurements.bodyFat")}: ${calc.bodyFatPercentage.toFixed(1)}%`;
-        message += `\n${method}`;
-        if (calc.leanMass != null) message += `\n${t("measurements.leanMass")}: ${calc.leanMass.toFixed(1)} kg`;
-        if (calc.fatMass != null) message += `\n${t("measurements.fatMass")}: ${calc.fatMass.toFixed(1)} kg`;
-      }
-
-      Alert.alert(t("common.success"), message);
-      router.back();
+      await updateMutation.mutateAsync(data);
+      Alert.alert(t("common.success"), t("measurements.editSuccess"), [
+        { text: "OK", onPress: () => router.back() },
+      ]);
     } catch (error: any) {
       const errData = error.response?.data;
       if (errData?.errorCode === "MEASUREMENT_IMPLAUSIBLE") {
@@ -164,7 +215,7 @@ export default function NewMeasurement() {
             <ArrowLeft size={24} color="#111827" />
           </Button>
           <Text fontSize="$6" fontWeight="bold" color="#111827">
-            {t("measurements.new")}
+            {t("measurements.edit")}
           </Text>
         </XStack>
 
@@ -205,7 +256,11 @@ export default function NewMeasurement() {
                   borderColor="#059669"
                   borderWidth={1}
                   pressStyle={{ bg: "#D1FAE5" }}
-                  onPress={setToday}
+                  onPress={() => {
+                    const today = new Date().toISOString().split("T")[0];
+                    updateField("measurementDate", today);
+                    updateField("measurementDateDisplay", new Date().toLocaleDateString("pt-BR"));
+                  }}
                 >
                   <XStack items="center" gap={6}>
                     <Calendar size={18} color="#059669" />
@@ -220,9 +275,8 @@ export default function NewMeasurement() {
               <Text fontSize="$3" color="#6B7280">{t("measurements.weight")} (kg) *</Text>
               <Input
                 value={form.weight}
-                onChangeText={(v) => updateForm("weight", v)}
+                onChangeText={(v) => updateField("weight", v)}
                 keyboardType="decimal-pad"
-                placeholder="75.5"
                 size="$4"
                 style={{ backgroundColor: "white", paddingTop: 0, paddingBottom: 0 }}
                 borderColor={errors.weight ? "#DC2626" : "#E5E7EB"}
@@ -247,19 +301,19 @@ export default function NewMeasurement() {
             {errors.skinfolds && <Text color="#DC2626" fontSize="$2">{errors.skinfolds}</Text>}
 
             <XStack gap={12}>
-              <FieldInput label={t("measurements.triceps")} field="triceps" form={form} errors={errors} update={updateForm} />
-              <FieldInput label={t("measurements.subscapular")} field="subscapular" form={form} errors={errors} update={updateForm} />
+              <FieldInput label={t("measurements.triceps")} field="triceps" form={form} errors={errors} update={updateField} />
+              <FieldInput label={t("measurements.subscapular")} field="subscapular" form={form} errors={errors} update={updateField} />
             </XStack>
             <XStack gap={12}>
-              <FieldInput label={t("measurements.chest")} field="chest" form={form} errors={errors} update={updateForm} />
-              <FieldInput label={t("measurements.midaxillary")} field="midaxillary" form={form} errors={errors} update={updateForm} />
+              <FieldInput label={t("measurements.chest")} field="chest" form={form} errors={errors} update={updateField} />
+              <FieldInput label={t("measurements.midaxillary")} field="midaxillary" form={form} errors={errors} update={updateField} />
             </XStack>
             <XStack gap={12}>
-              <FieldInput label={t("measurements.suprailiac")} field="suprailiac" form={form} errors={errors} update={updateForm} />
-              <FieldInput label={t("measurements.abdominal")} field="abdominal" form={form} errors={errors} update={updateForm} />
+              <FieldInput label={t("measurements.suprailiac")} field="suprailiac" form={form} errors={errors} update={updateField} />
+              <FieldInput label={t("measurements.abdominal")} field="abdominal" form={form} errors={errors} update={updateField} />
             </XStack>
             <XStack gap={12}>
-              <FieldInput label={t("measurements.thighFold")} field="thigh" form={form} errors={errors} update={updateForm} />
+              <FieldInput label={t("measurements.thighFold")} field="thigh" form={form} errors={errors} update={updateField} />
               <YStack flex={1} />
             </XStack>
           </YStack>
@@ -277,22 +331,22 @@ export default function NewMeasurement() {
             </XStack>
 
             <XStack gap={12}>
-              <FieldInput label={t("measurements.neck")} field="neck" form={form} errors={errors} update={updateForm} />
-              <FieldInput label={t("measurements.waist")} field="waist" form={form} errors={errors} update={updateForm} />
+              <FieldInput label={t("measurements.neck")} field="neck" form={form} errors={errors} update={updateField} />
+              <FieldInput label={t("measurements.waist")} field="waist" form={form} errors={errors} update={updateField} />
             </XStack>
             <XStack gap={12}>
-              <FieldInput label={t("measurements.hip")} field="hip" form={form} errors={errors} update={updateForm} />
-              <FieldInput label={t("measurements.shoulders")} field="shoulders" form={form} errors={errors} update={updateForm} />
+              <FieldInput label={t("measurements.hip")} field="hip" form={form} errors={errors} update={updateField} />
+              <FieldInput label={t("measurements.shoulders")} field="shoulders" form={form} errors={errors} update={updateField} />
             </XStack>
             <XStack gap={12}>
-              <FieldInput label={t("measurements.chestCirc")} field="chestCirc" form={form} errors={errors} update={updateForm} />
+              <FieldInput label={t("measurements.chestCirc")} field="chestCirc" form={form} errors={errors} update={updateField} />
               <YStack flex={1} />
             </XStack>
 
-            <BilateralFields label={t("measurements.circ_thigh")} leftField="leftThigh" rightField="rightThigh" leftLabel={t("measurements.left")} rightLabel={t("measurements.right")} form={form} errors={errors} update={updateForm} />
-            <BilateralFields label={t("measurements.circ_calf")} leftField="leftCalf" rightField="rightCalf" leftLabel={t("measurements.left")} rightLabel={t("measurements.right")} form={form} errors={errors} update={updateForm} />
-            <BilateralFields label={t("measurements.circ_bicepRelaxed")} leftField="leftBicepRelaxed" rightField="rightBicepRelaxed" leftLabel={t("measurements.left")} rightLabel={t("measurements.right")} form={form} errors={errors} update={updateForm} />
-            <BilateralFields label={t("measurements.circ_bicepFlexed")} leftField="leftBicepFlexed" rightField="rightBicepFlexed" leftLabel={t("measurements.left")} rightLabel={t("measurements.right")} form={form} errors={errors} update={updateForm} />
+            <BilateralFields label={t("measurements.circ_thigh")} leftField="leftThigh" rightField="rightThigh" leftLabel={t("measurements.left")} rightLabel={t("measurements.right")} form={form} errors={errors} update={updateField} />
+            <BilateralFields label={t("measurements.circ_calf")} leftField="leftCalf" rightField="rightCalf" leftLabel={t("measurements.left")} rightLabel={t("measurements.right")} form={form} errors={errors} update={updateField} />
+            <BilateralFields label={t("measurements.circ_bicepRelaxed")} leftField="leftBicepRelaxed" rightField="rightBicepRelaxed" leftLabel={t("measurements.left")} rightLabel={t("measurements.right")} form={form} errors={errors} update={updateField} />
+            <BilateralFields label={t("measurements.circ_bicepFlexed")} leftField="leftBicepFlexed" rightField="rightBicepFlexed" leftLabel={t("measurements.left")} rightLabel={t("measurements.right")} form={form} errors={errors} update={updateField} />
           </YStack>
 
           {/* Submit */}
@@ -301,9 +355,9 @@ export default function NewMeasurement() {
             style={{ backgroundColor: "#059669" }}
             pressStyle={{ bg: "#047857" }}
             onPress={handleSubmit}
-            disabled={createMutation.isPending}
+            disabled={updateMutation.isPending}
           >
-            {createMutation.isPending ? (
+            {updateMutation.isPending ? (
               <XStack items="center" gap={8}>
                 <Spinner color="white" />
                 <Text color="white">{t("measurements.saving")}</Text>

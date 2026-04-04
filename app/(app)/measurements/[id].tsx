@@ -11,6 +11,7 @@ import {
   Ruler,
   Activity,
   Info,
+  Pencil,
 } from "@tamagui/lucide-icons";
 import { useTranslation } from "react-i18next";
 import {
@@ -79,9 +80,17 @@ export default function ViewMeasurement() {
         <Button size="$3" chromeless circular onPress={() => router.back()}>
           <ChevronLeft size={22} color="#111827" />
         </Button>
-        <Text fontSize="$6" fontWeight="bold" color="#111827">
+        <Text fontSize="$6" fontWeight="bold" color="#111827" flex={1}>
           {t("measurements.viewTitle")}
         </Text>
+        <Button
+          size="$3"
+          chromeless
+          circular
+          onPress={() => router.push({ pathname: "/(app)/measurements/edit", params: { id } })}
+        >
+          <Pencil size={18} color="#059669" />
+        </Button>
       </XStack>
 
       <ScrollView contentContainerStyle={{ padding: 16, gap: 12 }}>
