@@ -14,6 +14,7 @@ import {
   TrendingDown,
   Minus,
   User,
+  LineChart,
 } from "@tamagui/lucide-icons";
 import { useTranslation } from "react-i18next";
 import { useAuthStore } from "../../src/stores/auth.store";
@@ -321,6 +322,38 @@ export default function Home() {
               </YStack>
             </Card>
           </XStack>
+
+          {/* Evolution */}
+          <Card
+            bg="white"
+            rounded={16}
+            p={20}
+            borderWidth={1}
+            borderColor="#E5E7EB"
+            pressStyle={{ bg: "#F9FAFB" }}
+            onPress={() => navigate(() => router.push("/(app)/evolution" as any))}
+          >
+            <XStack items="center" gap={16}>
+              <YStack
+                width={48}
+                height={48}
+                rounded={24}
+                bg="#EEF2FF"
+                justify="center"
+                items="center"
+              >
+                <LineChart size={24} color="#6366F1" />
+              </YStack>
+              <YStack flex={1} gap={2}>
+                <Text fontSize="$3" fontWeight="600" color="#111827">
+                  {t("home.evolution")}
+                </Text>
+                <Text fontSize="$2" color="#6B7280">
+                  {t("home.evolutionSubtitle")}
+                </Text>
+              </YStack>
+            </XStack>
+          </Card>
         </YStack>
 
         {/* Logout */}
